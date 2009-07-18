@@ -82,7 +82,7 @@ class GenericErrorHandler extends AbstractErrorHandler {
 		}
 	}
 
-	function handle($code, $desc, $filename, $line, &$context) {
+	function __handle($code, $desc, $filename, $line, &$context) {
 		if(isset($_SERVER['SERVER_NAME'])) {
 			$bt = nl2br($this->renderBacktrace());
 		?>

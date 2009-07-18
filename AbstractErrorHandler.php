@@ -138,13 +138,13 @@ abstract class AbstractErrorHandler {
 	 *
 	 * @final
 	 */
-	final function handler($code, $desc, $filename = null,
-			$line = null, $context = null) {
-		if ($this->mask & $code) return;
+	final function handle($code, $desc, $filename, $line, &$context) {
+		if ($this->mask & $code)
+			return;
 		if (isset($GLOBALS["__EXC_reentrancy"]))
 			$this->handleReentrancy();
 		$GLOBALS["__EXC_reentrancy"] = true;
-		$this->handleException($code, $desc, $filename, $line, $context);
+		$this->__handle($code, $desc, $filename, $line, $context);
 	}
 	
 	/**
@@ -155,7 +155,7 @@ abstract class AbstractErrorHandler {
 	 * adica clasele derivate sunt obligate sa o reimplementeze pentru o
 	 * tratare corecta a exceptiilor.
 	 */
-	abstract function handle($code, $desc, $filename, $line, &$context);
+	abstract protected function __handle($code, $desc, $filename, $line, &$context);
 	
 	/**
 	 * Genereaza o eroare
@@ -182,6 +182,7 @@ abstract class AbstractErrorHandler {
 		$code = E_USER_ERROR;
 		$filename = __FILE__;
 		$line = __LINE__;
+		/*
 		if (is_object($desc)) {
 			for($class = get_class($desc); $class !== false;
 					$class = get_parent_class($class)) {
@@ -194,9 +195,10 @@ abstract class AbstractErrorHandler {
 			$context = $desc;
 			$desc = "Uncaught exception of type " . get_class($desc);
 		}
+		*/
 		if (!is_string($desc))
 			$desc = gettype($desc);
-		$this->handler($code, $desc, $filename, $line, $context);
+		$this->handle($code, $desc, $filename, $line, $context);
 	}
 
 	function handleReentrancy() {

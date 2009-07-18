@@ -31,9 +31,12 @@ class ErrorHandler {
 		return $GLOBALS["errorHandlerInstance"]->varDump($var);
 	}
 
-	static function handle($code, $desc, $filename, $line, &$context) {
-		return $GLOBALS["errorHandlerInstance"]->handle(
-				$code, $desc, $filename, $line, $context);
+	static function handle($code, $desc, $filename = null, $line = null, $context = null) {
+		return $GLOBALS["errorHandlerInstance"]->handle($code, $desc, $filename, $line, $context);
+	}
+
+	static function raise($desc, $context = null) {
+		return $GLOBALS["errorHandlerInstance"]->raise($desc, $context);
 	}
 }
 
