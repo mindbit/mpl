@@ -82,9 +82,9 @@ class GenericErrorHandler extends AbstractErrorHandler {
 		}
 	}
 
-	function __handle($code, $desc, $filename, $line, &$context) {
+	function __handleError($code, $desc, $filename, $line, &$context, $backtrace = null) {
 		if(isset($_SERVER['SERVER_NAME'])) {
-			$bt = nl2br($this->renderBacktrace());
+			$bt = nl2br($this->renderBacktrace($backtrace));
 		?>
 <center>
 <table border=1 cellspacing=1>
@@ -93,7 +93,7 @@ class GenericErrorHandler extends AbstractErrorHandler {
 </tr>
 <?
 		} else {
-			$bt = $this->renderBacktrace();
+			$bt = $this->renderBacktrace($backtrace);
 			echo(lSTR_AsciiTableRow::renderRowSeparator(array(EXC_TableWidth + 3)));
 			echo(lSTR_AsciiTableRow::renderCells(
 						array('EXCEPTION'), array(EXC_TableWidth + 3),
@@ -129,7 +129,7 @@ class GenericErrorHandler extends AbstractErrorHandler {
 	}
 
 	function backtraceFilter(&$frame) {
-		if (isset($frame["class"]) && $frame["class"] == "ErrorHandler" && $frame["function"] == "handle")
+		if (isset($frame["class"]) && $frame["class"] == "ErrorHandler" && $frame["function"] == "handleError")
 			return true;
 		return parent::backtraceFilter($stackLevel);
 	}

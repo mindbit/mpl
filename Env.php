@@ -21,7 +21,8 @@ class Env {
 		error_reporting(E_PHPINTERNAL);
 		ErrorHandler::setHandler(new GenericErrorHandler());
 		ErrorHandler::setMask(Env::get("MPL_ERROR_MASK", E_NONE));
-		set_error_handler(array("ErrorHandler", "handle"));
+		set_error_handler(array("ErrorHandler", "handleError"));
+		set_exception_handler(array("ErrorHandler", "handleException"));
 		// Env::setAssertOptions();
 	}
 }

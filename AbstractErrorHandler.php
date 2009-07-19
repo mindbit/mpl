@@ -27,17 +27,18 @@ abstract class AbstractErrorHandler {
 	 */
 	function errorCodeToStr($code) {
 		switch($code) {
-		case E_ERROR:			return "ERROR";
-		case E_WARNING:			return "WARNING";
-		case E_PARSE:			return "PARSE";
-		case E_NOTICE:			return "NOTICE";
-		case E_CORE_ERROR:		return "CORE_ERROR";
-		case E_CORE_WARNING:	return "CORE_WARNING";
-		case E_COMPILE_ERROR:	return "COMPILE_ERROR";
-		case E_COMPILE_WARNING:	return "COMPILE_WARNING";
-		case E_USER_ERROR:		return "USER_ERROR";
-		case E_USER_WARNING:	return "USER_WARNING";
-		case E_USER_NOTICE:		return "USER_NOTICE";
+		case E_ERROR:					return "ERROR";
+		case E_WARNING:					return "WARNING";
+		case E_PARSE:					return "PARSE";
+		case E_NOTICE:					return "NOTICE";
+		case E_CORE_ERROR:				return "CORE_ERROR";
+		case E_CORE_WARNING:			return "CORE_WARNING";
+		case E_COMPILE_ERROR:			return "COMPILE_ERROR";
+		case E_COMPILE_WARNING:			return "COMPILE_WARNING";
+		case E_USER_ERROR:				return "USER_ERROR";
+		case E_USER_WARNING:			return "USER_WARNING";
+		case E_USER_NOTICE:				return "USER_NOTICE";
+		case E_UNHANDLED_EXCEPTION:		return "E_UNHANDLED_EXCEPTION";
 		}
 	}
 	
@@ -135,16 +136,14 @@ abstract class AbstractErrorHandler {
 	 * Metoda asta NU trebuie reimplementata in clasele
 	 * derivate, pentru ca este doar un wrapper pentru ::HandleException()
 	 * plus un test dupa masca de erori.
-	 *
-	 * @final
 	 */
-	final function handle($code, $desc, $filename, $line, &$context) {
+	public final function handleError($code, $desc, $filename, $line, &$context) {
 		if ($this->mask & $code)
 			return;
 		if (isset($GLOBALS["__EXC_reentrancy"]))
 			$this->handleReentrancy();
 		$GLOBALS["__EXC_reentrancy"] = true;
-		$this->__handle($code, $desc, $filename, $line, $context);
+		$this->__handleError($code, $desc, $filename, $line, $context);
 	}
 	
 	/**
@@ -155,7 +154,21 @@ abstract class AbstractErrorHandler {
 	 * adica clasele derivate sunt obligate sa o reimplementeze pentru o
 	 * tratare corecta a exceptiilor.
 	 */
-	abstract protected function __handle($code, $desc, $filename, $line, &$context);
+	abstract protected function __handleError($code, $desc, $filename, $line, &$context, $backtrace = null);
+
+	public function handleException($exception) {
+		$context = null;
+		// $context = $exception->getCode();
+		// $context = $exception->getTrace();
+		$backtrace = $this->normalizeBacktrace($exception->getTrace());
+		$this->__handleError(
+				E_UNHANDLED_EXCEPTION,		// code
+				$exception->getMessage(),	// desc
+				$exception->getFile(),		// filename
+				$exception->getLine(),		// line
+				$context,					// context
+				$backtrace);				// backtrace
+	}
 	
 	/**
 	 * Genereaza o eroare
@@ -198,7 +211,7 @@ abstract class AbstractErrorHandler {
 		*/
 		if (!is_string($desc))
 			$desc = gettype($desc);
-		$this->handle($code, $desc, $filename, $line, $context);
+		$this->handleError($code, $desc, $filename, $line, $context);
 	}
 
 	function handleReentrancy() {
@@ -232,8 +245,9 @@ abstract class AbstractErrorHandler {
 	 * de numele functiei sau metodei. Metoda genereaza o noua stiva,
 	 * cu datele aliniate.
 	 */
-	function &normalizedBacktrace() {
-		$bt = debug_backtrace();
+	function normalizeBacktrace($bt = null) {
+		if ($bt === null)
+			$bt = debug_backtrace();
 		$stack = array();
 		$n = sizeof($bt);
 		for($i = 0; $i <= $n; $i++) {
@@ -255,7 +269,7 @@ abstract class AbstractErrorHandler {
 		return $ret;
 	}
 
-	function &filterNormalizedBacktrace(&$stack) {
+	function filterNormalizedBacktrace($stack) {
 		$ret = array();
 		$firstLevel = 0;
 		for($i = 0; $i < sizeof($stack); $i++)
@@ -266,7 +280,7 @@ abstract class AbstractErrorHandler {
 		return $ret;
 	}
 
-	function backtraceFilter(&$frame) {
+	function backtraceFilter($frame) {
 		return false; // FIXME
 		if (!isset($frame['function']))
 			return false;
@@ -294,7 +308,7 @@ abstract class AbstractErrorHandler {
 	 */
 	function renderBacktrace($bt = null) {
 		if($bt === null)
-			$bt = &$this->normalizedBacktrace();
+			$bt = $this->normalizeBacktrace();
 		$ret = '';
 		$i = 0;
 		foreach($bt as $level) {
@@ -449,5 +463,6 @@ define('EXC_SILENT',	false);
 define("E_PHPINTERNAL",	E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING |
 		E_COMPILE_ERROR | E_COMPILE_WARNING);
 define("E_NONE", 		0);
+define("E_UNHANDLED_EXCEPTION", 0x10000);
 
 ?>
