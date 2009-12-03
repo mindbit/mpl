@@ -1,5 +1,14 @@
 <?
 require_once('AbstractErrorHandler.php');
+require_once('AsciiTable.php');
+
+define("EXC_TABLE_WIDTH",    72);
+define("EXC_LEFT_WIDTH",     25);
+define("EXC_RIGHT_WIDTH",    EXC_TABLE_WIDTH - EXC_LEFT_WIDTH);
+
+define("STR_ALIGN_LEFT",		STR_PAD_RIGHT);
+define("STR_ALIGN_CENTER",		STR_PAD_BOTH);
+define("STR_ALIGN_RIGHT",		STR_PAD_LEFT);
 
 class GenericErrorHandler extends AbstractErrorHandler {
 	function renderExceptionElements(&$code, &$desc, &$filename,
@@ -42,43 +51,43 @@ class GenericErrorHandler extends AbstractErrorHandler {
 </tr>
 		<?
 		} else {
-			echo(lSTR_AsciiTableRow::renderCells(
+			echo(AsciiTable::renderCells(
 						array(
 							"Error code",
-							lEXC_ErrorCode2STR($code)." (".$code.")"
+							$this->errorCodeToStr($code)." (".$code.")"
 							),
-						array(EXC_LeftWidth, EXC_RightWidth)));
-			echo(lSTR_AsciiTableRow::renderRowSeparator(
-						array(EXC_LeftWidth, EXC_RightWidth)));
-			echo(lSTR_AsciiTableRow::renderCells(
+						array(EXC_LEFT_WIDTH, EXC_RIGHT_WIDTH)));
+			echo(AsciiTable::renderRowSeparator(
+						array(EXC_LEFT_WIDTH, EXC_RIGHT_WIDTH)));
+			echo(AsciiTable::renderCells(
 						array("Error description", $desc),
-						array(EXC_LeftWidth, EXC_RightWidth)));
-			echo(lSTR_AsciiTableRow::renderRowSeparator(
-						array(EXC_LeftWidth, EXC_RightWidth)));
+						array(EXC_LEFT_WIDTH, EXC_RIGHT_WIDTH)));
+			echo(AsciiTable::renderRowSeparator(
+						array(EXC_LEFT_WIDTH, EXC_RIGHT_WIDTH)));
 			if($filename) {
-				echo(lSTR_AsciiTableRow::renderCells(
+				echo(AsciiTable::renderCells(
 							array("File", $filename),
-							array(EXC_LeftWidth, EXC_RightWidth)));
-				echo(lSTR_AsciiTableRow::renderRowSeparator(
-							array(EXC_LeftWidth, EXC_RightWidth)));
+							array(EXC_LEFT_WIDTH, EXC_RIGHT_WIDTH)));
+				echo(AsciiTable::renderRowSeparator(
+							array(EXC_LEFT_WIDTH, EXC_RIGHT_WIDTH)));
 			}
 			if ($line) {
-				echo(lSTR_AsciiTableRow::renderCells(
+				echo(AsciiTable::renderCells(
 							array("Line", $line),
-							array(EXC_LeftWidth, EXC_RightWidth)));
-				echo(lSTR_AsciiTableRow::renderRowSeparator(
-							array(EXC_LeftWidth, EXC_RightWidth)));
+							array(EXC_LEFT_WIDTH, EXC_RIGHT_WIDTH)));
+				echo(AsciiTable::renderRowSeparator(
+							array(EXC_LEFT_WIDTH, EXC_RIGHT_WIDTH)));
 			}
-			echo(lSTR_AsciiTableRow::renderCells(
+			echo(AsciiTable::renderCells(
 						array("Backtrace", $backtrace),
-						array(EXC_LeftWidth, EXC_RightWidth)));
-			echo(lSTR_AsciiTableRow::renderRowSeparator(
-						array(EXC_LeftWidth, EXC_RightWidth)));
-			echo(lSTR_AsciiTableRow::renderCells(
-						array("Context", lSTR_GetOutput('var_dump', $context)),
-						array(EXC_LeftWidth, EXC_RightWidth)));
-			echo(lSTR_AsciiTableRow::renderRowSeparator(
-						array(EXC_LeftWidth, EXC_RightWidth)));
+						array(EXC_LEFT_WIDTH, EXC_RIGHT_WIDTH)));
+			echo(AsciiTable::renderRowSeparator(
+						array(EXC_LEFT_WIDTH, EXC_RIGHT_WIDTH)));
+			echo(AsciiTable::renderCells(
+						array("Context", "x"),// lSTR_GetOutput('var_dump', $context)),
+						array(EXC_LEFT_WIDTH, EXC_RIGHT_WIDTH)));
+			echo(AsciiTable::renderRowSeparator(
+						array(EXC_LEFT_WIDTH, EXC_RIGHT_WIDTH)));
 		}
 	}
 
@@ -94,12 +103,12 @@ class GenericErrorHandler extends AbstractErrorHandler {
 <?
 		} else {
 			$bt = $this->renderBacktrace($backtrace);
-			echo(lSTR_AsciiTableRow::renderRowSeparator(array(EXC_TableWidth + 3)));
-			echo(lSTR_AsciiTableRow::renderCells(
-						array('EXCEPTION'), array(EXC_TableWidth + 3),
+			echo(AsciiTable::renderRowSeparator(array(EXC_TABLE_WIDTH + 3)));
+			echo(AsciiTable::renderCells(
+						array('EXCEPTION'), array(EXC_TABLE_WIDTH + 3),
 						array(1), array(STR_ALIGN_CENTER)));
-			echo(lSTR_AsciiTableRow::renderRowSeparator(
-						array(EXC_LeftWidth, EXC_RightWidth)));
+			echo(AsciiTable::renderRowSeparator(
+						array(EXC_LEFT_WIDTH, EXC_RIGHT_WIDTH)));
 		}
 		$this->removeGlobals($context);
 		$this->renderExceptionElements($code, $desc, $filename,
