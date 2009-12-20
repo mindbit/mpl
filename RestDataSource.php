@@ -64,7 +64,10 @@ class RestResponse {
 }
 
 abstract class RestRequest {
-	const OPERATION_FETCH = 1;
+	const OPERATION_FETCH  = 1;
+	const OPERATION_ADD    = 2;
+	const OPERATION_UPDATE = 3;
+	const OPERATION_REMOVE = 4;
 
 	const PROTECTED_MAGIC = "\000*\000";
 
@@ -76,6 +79,7 @@ abstract class RestRequest {
 	protected $textMatchStyle;
 	protected $componentId;
 	protected $dataSource;
+	protected $oldValues;
 
 	protected $response;
 
@@ -90,6 +94,9 @@ abstract class RestRequest {
 		case 'fetch':
 			$this->operationType = self::OPERATION_FETCH;
 			break;
+		case 'update':
+			$this->operationType = self::OPERATION_UPDATE;
+			break;
 		default:
 			throw new Exception("Unknown operation type");
 		}
@@ -99,6 +106,9 @@ abstract class RestRequest {
 
 		if (isset($_REQUEST["_endRow"]))
 			$this->endRow = (int)$_REQUEST["_endRow"];
+
+		if (isset($_REQUEST["_oldValues"]))
+			$this->oldValues = (array)json_decode($_REQUEST["_oldValues"]);
 
 		$this->response = new RestResponse();
 
@@ -110,8 +120,10 @@ abstract class RestRequest {
 	function omToArray($om) {
 		$ret = array();
 		$om = (array)$om;
-		foreach ($this->omFieldNames as $field)
-			$ret[$field] = $om[self::PROTECTED_MAGIC . $field];
+		foreach ($this->omFieldNames as $field) {
+			$val = $om[self::PROTECTED_MAGIC . $field];
+			$ret[$field] = $val === NULL? "" : $val;
+		}
 		return $ret;
 	}
 
@@ -126,10 +138,27 @@ abstract class RestRequest {
 			$this->response->addData($this->omToArray($obj));
 	}
 
+	function doUpdate() {
+		foreach ($this->omFieldNames as $field) {
+			if (!isset($_REQUEST[$field]))
+				continue;
+			$phpName = $this->omPeer->translateFieldName($field, BasePeer::TYPE_FIELDNAME,
+					BasePeer::TYPE_PHPNAME);
+			call_user_func(array($this->om, "set".$phpName), $_REQUEST[$field]);
+		}
+		$this->om->setNew(false);
+		$this->om->save();
+
+		$this->response->addData($this->omToArray($this->om));
+	}
+
 	function dispatch() {
 		switch ($this->operationType) {
 		case self::OPERATION_FETCH:
 			$this->doFetch();
+			break;
+		case self::OPERATION_UPDATE:
+			$this->doUpdate();
 			break;
 		}
 	}
