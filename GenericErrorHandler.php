@@ -140,7 +140,7 @@ class GenericErrorHandler extends AbstractErrorHandler {
 	function backtraceFilter(&$frame) {
 		if (isset($frame["class"]) && $frame["class"] == "ErrorHandler" && $frame["function"] == "handleError")
 			return true;
-		return parent::backtraceFilter($stackLevel);
+		return parent::backtraceFilter($frame);
 	}
 }
 
