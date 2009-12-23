@@ -141,6 +141,22 @@ abstract class RestRequest {
 		return $ret;
 	}
 
+	function arrayToOm() {
+		$tableMap = $this->omPeer->getTableMap();
+		foreach ($this->omFieldNames as $field) {
+			if (!isset($this->data[$field]))
+				continue;
+			$column = $tableMap->getColumn($field);
+			/* For text and numeric columns that can be null we translate "" to NULL. */
+			if ($this->data[$field] === "" && ($column->isText() || $column->isNumeric()) &&
+					!$column->isNotNull())
+				$this->data[$field] = NULL;
+			$phpName = $this->omPeer->translateFieldName($field, BasePeer::TYPE_FIELDNAME,
+					BasePeer::TYPE_PHPNAME);
+			call_user_func(array($this->om, "set".$phpName), $this->data[$field]);
+		}
+	}
+
 	function doFetch() {
 		$c = new Criteria();
 		if (null !== $this->startRow) {
@@ -153,16 +169,9 @@ abstract class RestRequest {
 	}
 
 	function doUpdate() {
-		foreach ($this->omFieldNames as $field) {
-			if (!isset($this->data[$field]))
-				continue;
-			$phpName = $this->omPeer->translateFieldName($field, BasePeer::TYPE_FIELDNAME,
-					BasePeer::TYPE_PHPNAME);
-			call_user_func(array($this->om, "set".$phpName), $this->data[$field]);
-		}
+		$this->arrayToOm();
 		$this->om->setNew(false);
 		$this->om->save();
-
 		$this->response->addData($this->omToArray($this->om));
 	}
 
