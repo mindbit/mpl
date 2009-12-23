@@ -79,6 +79,7 @@ abstract class RestRequest {
 	protected $textMatchStyle;
 	protected $componentId;
 	protected $dataSource;
+	protected $data;
 	protected $oldValues;
 
 	protected $response;
@@ -88,9 +89,19 @@ abstract class RestRequest {
 	protected $omFieldNames;
 
 	function __construct() {
-		if (!isset($_REQUEST["_operationType"]))
+		/* Data sources must use the postMessage dataProtocol */
+		if (!isset($_SERVER["REQUEST_METHOD"]) ||
+				$_SERVER["REQUEST_METHOD"] != "POST" ||
+				!isset($GLOBALS['HTTP_RAW_POST_DATA']))
+			throw new Exception("Unsupported request");
+
+		/* Decode the json encoded parameters from the raw HTTP request */
+		$request = (array)json_decode($GLOBALS['HTTP_RAW_POST_DATA']);
+
+		if (!isset($request["operationType"]))
 			throw new Exception("Operation type not specified");
-		switch ($_REQUEST["_operationType"]) {
+
+		switch ($request["operationType"]) {
 		case 'fetch':
 			$this->operationType = self::OPERATION_FETCH;
 			break;
@@ -101,14 +112,17 @@ abstract class RestRequest {
 			throw new Exception("Unknown operation type");
 		}
 
-		if (isset($_REQUEST["_startRow"]))
-			$this->startRow = (int)$_REQUEST["_startRow"];
+		if (isset($request["startRow"]))
+			$this->startRow = (int)$request["startRow"];
 
-		if (isset($_REQUEST["_endRow"]))
-			$this->endRow = (int)$_REQUEST["_endRow"];
+		if (isset($request["endRow"]))
+			$this->endRow = (int)$request["endRow"];
 
-		if (isset($_REQUEST["_oldValues"]))
-			$this->oldValues = (array)json_decode($_REQUEST["_oldValues"]);
+		if (isset($request["oldValues"]))
+			$this->oldValues = (array)$request["oldValues"];
+
+		if (isset($request["data"]))
+			$this->data = (array)$request["data"];
 
 		$this->response = new RestResponse();
 
@@ -140,11 +154,11 @@ abstract class RestRequest {
 
 	function doUpdate() {
 		foreach ($this->omFieldNames as $field) {
-			if (!isset($_REQUEST[$field]))
+			if (!isset($this->data[$field]))
 				continue;
 			$phpName = $this->omPeer->translateFieldName($field, BasePeer::TYPE_FIELDNAME,
 					BasePeer::TYPE_PHPNAME);
-			call_user_func(array($this->om, "set".$phpName), $_REQUEST[$field]);
+			call_user_func(array($this->om, "set".$phpName), $this->data[$field]);
 		}
 		$this->om->setNew(false);
 		$this->om->save();
