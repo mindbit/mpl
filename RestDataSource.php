@@ -143,17 +143,26 @@ abstract class RestRequest {
 
 	function arrayToOm() {
 		$tableMap = $this->omPeer->getTableMap();
+		$ret = array();
 		foreach ($this->omFieldNames as $field) {
 			if (!isset($this->data[$field]))
 				continue;
 			$column = $tableMap->getColumn($field);
+			$value = $this->data[$field];
 			/* For text and numeric columns that can be null we translate "" to NULL. */
 			if ($this->data[$field] === "" && ($column->isText() || $column->isNumeric()) &&
 					!$column->isNotNull())
-				$this->data[$field] = NULL;
+				$value = NULL;
+			$ret[$field] = $value;
+		}
+		return $ret;
+	}
+
+	function setOmFields($data) {
+		foreach ($data as $field => $value) {
 			$phpName = $this->omPeer->translateFieldName($field, BasePeer::TYPE_FIELDNAME,
 					BasePeer::TYPE_PHPNAME);
-			call_user_func(array($this->om, "set".$phpName), $this->data[$field]);
+			call_user_func(array($this->om, "set".$phpName), $data[$field]);
 		}
 	}
 
@@ -169,7 +178,7 @@ abstract class RestRequest {
 	}
 
 	function doUpdate() {
-		$this->arrayToOm();
+		$this->setOmFields($this->arrayToOm());
 		$this->om->setNew(false);
 		$this->om->save();
 		$this->response->addData($this->omToArray($this->om));
