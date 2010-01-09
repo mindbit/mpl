@@ -105,6 +105,9 @@ abstract class RestRequest {
 		case 'fetch':
 			$this->operationType = self::OPERATION_FETCH;
 			break;
+		case 'add':
+			$this->operationType = self::OPERATION_ADD;
+			break;
 		case 'update':
 			$this->operationType = self::OPERATION_UPDATE;
 			break;
@@ -177,9 +180,8 @@ abstract class RestRequest {
 			$this->response->addData($this->omToArray($obj));
 	}
 
-	function doUpdate() {
+	function doSave() {
 		$this->setOmFields($this->arrayToOm());
-		$this->om->setNew(false);
 		$this->om->save();
 		$this->response->addData($this->omToArray($this->om));
 	}
@@ -190,7 +192,9 @@ abstract class RestRequest {
 			$this->doFetch();
 			break;
 		case self::OPERATION_UPDATE:
-			$this->doUpdate();
+			$this->om->setNew(false);
+		case self::OPERATION_ADD:
+			$this->doSave();
 			break;
 		}
 	}
