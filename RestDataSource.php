@@ -34,7 +34,8 @@ class RestResponse {
 
 	function &toArray() {
 		$ret = array("status" => $this->status);
-		if ($this->status == self::STATUS_SUCCESS) {
+		switch ($this->status) {
+		case self::STATUS_SUCCESS:
 			if (null !== $this->startRow)
 				$ret["startRow"] = $this->startRow;
 			if (null !== $this->endRow)
@@ -42,7 +43,10 @@ class RestResponse {
 			if (null !== $this->totalRows)
 				$ret["totalRows"] = $this->totalRows;
 			$ret["data"] =& $this->data;
-		} else {
+			return $ret;
+		case self::STATUS_FAILURE:
+			$ret["data"] =& $this->data;
+		default:
 			$ret["errors"] =& $this->errors;
 		}
 		return $ret;
@@ -60,6 +64,11 @@ class RestResponse {
 
 	function xmlEncode() {
 		// TODO write this
+	}
+
+	function failure($e) {
+		$this->status = self::STATUS_FAILURE;
+		$this->data = $e->getMessage();
 	}
 }
 
@@ -88,7 +97,7 @@ abstract class RestRequest {
 	protected $omPeer;
 	protected $omFieldNames;
 
-	function __construct() {
+	function decode() {
 		/* Data sources must use the postMessage dataProtocol */
 		if (!isset($_SERVER["REQUEST_METHOD"]) ||
 				$_SERVER["REQUEST_METHOD"] != "POST" ||
@@ -126,7 +135,9 @@ abstract class RestRequest {
 
 		if (isset($request["data"]))
 			$this->data = (array)$request["data"];
+	}
 
+	function init() {
 		$this->response = new RestResponse();
 
 		$this->om = $this->createOm();
@@ -187,15 +198,22 @@ abstract class RestRequest {
 	}
 
 	function dispatch() {
-		switch ($this->operationType) {
-		case self::OPERATION_FETCH:
-			$this->doFetch();
-			break;
-		case self::OPERATION_UPDATE:
-			$this->om->setNew(false);
-		case self::OPERATION_ADD:
-			$this->doSave();
-			break;
+		try {
+			$this->init();
+			$this->decode();
+
+			switch ($this->operationType) {
+			case self::OPERATION_FETCH:
+				$this->doFetch();
+				break;
+			case self::OPERATION_UPDATE:
+				$this->om->setNew(false);
+			case self::OPERATION_ADD:
+				$this->doSave();
+				break;
+			}
+		} catch (Exception $e) {
+			$this->response->failure($e);
 		}
 	}
 
