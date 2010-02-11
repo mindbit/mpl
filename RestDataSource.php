@@ -120,6 +120,9 @@ abstract class RestRequest {
 		case 'update':
 			$this->operationType = self::OPERATION_UPDATE;
 			break;
+		case 'remove':
+			$this->operationType = self::OPERATION_REMOVE;
+			break;
 		default:
 			throw new Exception("Unknown operation type");
 		}
@@ -197,6 +200,11 @@ abstract class RestRequest {
 		$this->response->addData($this->omToArray($this->om));
 	}
 
+	function doRemove() {
+		$this->setOmFields($this->arrayToOm());
+		$this->om->delete();
+	}
+
 	function dispatch() {
 		try {
 			$this->init();
@@ -210,6 +218,9 @@ abstract class RestRequest {
 				$this->om->setNew(false);
 			case self::OPERATION_ADD:
 				$this->doSave();
+				break;
+			case self::OPERATION_REMOVE:
+				$this->doRemove();
 				break;
 			}
 		} catch (Exception $e) {
