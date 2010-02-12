@@ -133,6 +133,9 @@ abstract class RestRequest {
 		if (isset($request["endRow"]))
 			$this->endRow = (int)$request["endRow"];
 
+		if (isset($request["textMatchStyle"]))
+			$this->textMatchStyle = $request["textMatchStyle"];
+
 		if (isset($request["oldValues"]))
 			$this->oldValues = (array)$request["oldValues"];
 
@@ -188,6 +191,12 @@ abstract class RestRequest {
 		if (null !== $this->startRow) {
 			$c->setLimit($this->endRow - $this->startRow);
 			$c->setOffset($this->startRow);
+		}
+		$omFields = $this->arrayToOm($this->data);
+		foreach ($omFields as $field => $value) {
+			$colName = $this->omPeer->translateFieldName($field, BasePeer::TYPE_FIELDNAME,
+					BasePeer::TYPE_COLNAME);
+			$c->add($colName, $value);
 		}
 		$objs = $this->omPeer->doSelect($c);
 		foreach ($objs as $obj)
