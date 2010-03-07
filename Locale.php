@@ -4,6 +4,10 @@ class Locale {
 	private static $directory;
 	private static $current = array();
 	private static $data = array();
+	private static $escapeMap = array(
+			'\\'	=> '\\\\',
+			'\''	=> '\\\''
+			);
 
 	static function load($category, $locale) {
 		assert(self::$directory !== null);
@@ -72,7 +76,8 @@ class Locale {
 			$stream->seek($off);
 			$txt2 = $stream->read($len);
 
-			$ret .= $sep . "\"" . $txt1 . "\" => \"" . $txt2 . "\"";
+			$ret .= $sep . "'" . strtr($txt1, self::$escapeMap) . "' => '" .
+				strtr($txt2, self::$escapeMap) . "'";
 
 			$sep = ",\n\t\t";
 			$o += 8;
