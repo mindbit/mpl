@@ -16,6 +16,7 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+require_once 'OmRequest.php';
 
 class RestResponse {
 	const STATUS_SUCCESS = 0;
@@ -89,30 +90,15 @@ class RestResponse {
 	}
 }
 
-abstract class RestRequest {
-	const OPERATION_FETCH  = 1;
-	const OPERATION_ADD    = 2;
-	const OPERATION_UPDATE = 3;
-	const OPERATION_REMOVE = 4;
-
-	const PROTECTED_MAGIC = "\000*\000";
-
-	abstract function createOm();
-
-	protected $operationType;
+abstract class RestRequest extends OmRequest {
 	protected $startRow;
 	protected $endRow;
 	protected $textMatchStyle;
 	protected $componentId;
 	protected $dataSource;
-	protected $data;
 	protected $oldValues;
 
 	protected $response;
-
-	protected $om;
-	protected $omPeer;
-	protected $omFieldNames;
 
 	function decode() {
 		/* Data sources must use the postMessage dataProtocol */
@@ -161,47 +147,10 @@ abstract class RestRequest {
 	}
 
 	function init() {
+		parent::init();
 		$this->response = new RestResponse();
-
-		$this->om = $this->createOm();
-		$this->omPeer = $this->om->getPeer();
-		$this->omFieldNames = $this->omPeer->getFieldNames(BasePeer::TYPE_FIELDNAME);
 	}
 
-	function omToArray($om) {
-		$ret = array();
-		$om = (array)$om;
-		foreach ($this->omFieldNames as $field) {
-			$val = $om[self::PROTECTED_MAGIC . $field];
-			$ret[$field] = $val === NULL? "" : $val;
-		}
-		return $ret;
-	}
-
-	function arrayToOm() {
-		$tableMap = $this->omPeer->getTableMap();
-		$ret = array();
-		foreach ($this->omFieldNames as $field) {
-			if (!isset($this->data[$field]))
-				continue;
-			$column = $tableMap->getColumn($field);
-			$value = $this->data[$field];
-			/* For text and numeric columns that can be null we translate "" to NULL. */
-			if ($this->data[$field] === "" && ($column->isText() || $column->isNumeric()) &&
-					!$column->isNotNull())
-				$value = NULL;
-			$ret[$field] = $value;
-		}
-		return $ret;
-	}
-
-	function setOmFields($data) {
-		foreach ($data as $field => $value) {
-			$phpName = $this->omPeer->translateFieldName($field, BasePeer::TYPE_FIELDNAME,
-					BasePeer::TYPE_PHPNAME);
-			call_user_func(array($this->om, "set".$phpName), $data[$field]);
-		}
-	}
 
 	function doFetch() {
 		$c = new Criteria();
@@ -221,34 +170,13 @@ abstract class RestRequest {
 	}
 
 	function doSave() {
-		$this->setOmFields($this->arrayToOm());
-		$this->om->save();
+		parent::doSave();
 		$this->response->addData($this->omToArray($this->om));
-	}
-
-	function doRemove() {
-		$this->setOmFields($this->arrayToOm());
-		$this->om->delete();
 	}
 
 	function dispatch() {
 		try {
-			$this->init();
-			$this->decode();
-
-			switch ($this->operationType) {
-			case self::OPERATION_FETCH:
-				$this->doFetch();
-				break;
-			case self::OPERATION_UPDATE:
-				$this->om->setNew(false);
-			case self::OPERATION_ADD:
-				$this->doSave();
-				break;
-			case self::OPERATION_REMOVE:
-				$this->doRemove();
-				break;
-			}
+			parent::dispatch();
 		} catch (Exception $e) {
 			$this->response->failure($e);
 		}
