@@ -81,10 +81,6 @@ abstract class OmRequest extends BaseRequest {
 		return $ret;
 	}
 
-	public function getOm() {
-		return $this->om;
-	}
-
 	protected function doSave() {
 		$this->setOmFields($this->arrayToOm());
 		if ($this->om->validate()) {
@@ -99,7 +95,11 @@ abstract class OmRequest extends BaseRequest {
 		$this->om->delete();
 	}
 
-	public function dispatch() {
+	function getOm() {
+		return $this->om;
+	}
+
+	function dispatch() {
 		$this->init();
 		$this->decode();
 

@@ -18,7 +18,7 @@
  */
 
 abstract class BaseRequest {
-	abstract public function dispatch();
+	abstract function dispatch();
 }
 
 ?>

@@ -48,7 +48,7 @@ abstract class SimpleFormRequest extends OmRequest {
 		$this->om = $this->omPeer->retrieveByPk($_REQUEST['__id']);
 	}
 
-	public function dispatch() {
+	function dispatch() {
 		try {
 			parent::dispatch();
 		} catch (Exception $e) {

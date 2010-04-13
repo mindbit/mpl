@@ -151,7 +151,7 @@ abstract class AbstractErrorHandler {
 	 * derivate, pentru ca este doar un wrapper pentru ::HandleException()
 	 * plus un test dupa masca de erori.
 	 */
-	public final function handleError($code, $desc, $filename, $line, &$context) {
+	final function handleError($code, $desc, $filename, $line, &$context) {
 		if ($this->mask & $code)
 			return;
 		if (isset($GLOBALS["__EXC_reentrancy"]))
@@ -170,7 +170,7 @@ abstract class AbstractErrorHandler {
 	 */
 	abstract protected function __handleError($code, $desc, $filename, $line, &$context, $backtrace = null);
 
-	public function handleException($exception) {
+	function handleException($exception) {
 		$context = null;
 		// $context = $exception->getCode();
 		// $context = $exception->getTrace();
