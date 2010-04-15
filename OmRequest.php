@@ -18,14 +18,13 @@
  */
 
 require_once 'BaseRequest.php';
+require_once 'PropelUtil.php';
 
 abstract class OmRequest extends BaseRequest {
 	const OPERATION_FETCH  = 1;
 	const OPERATION_ADD    = 2;
 	const OPERATION_UPDATE = 3;
 	const OPERATION_REMOVE = 4;
-
-	const PROTECTED_MAGIC = "\000*\000";
 
 	protected $operationType;
 	protected $data;
@@ -58,7 +57,7 @@ abstract class OmRequest extends BaseRequest {
 		$ret = array();
 		$om = (array)$om;
 		foreach ($this->omFieldNames as $field) {
-			$val = $om[self::PROTECTED_MAGIC . $field];
+			$val = $om[PropelUtil::PROTECTED_MAGIC . $field];
 			$ret[$field] = $val === NULL? "" : $val;
 		}
 		return $ret;
