@@ -24,6 +24,10 @@ abstract class BaseForm {
 	protected $request;
 	protected $om;
 
+	abstract function form();
+	abstract function getTitle();
+	abstract function getFormAttributes();
+
 	function __construct() {
 		$this->request = $this->createRequest();
 		if (null === $this->request)
@@ -48,6 +52,7 @@ abstract class BaseForm {
 		<body>
 		<? $this->body(); ?>
 		</body>
+		</html>
 		<?
 	}
 
@@ -74,9 +79,6 @@ abstract class BaseForm {
 		$this->form();
 		echo "</form>";
 	}
-
-	abstract function getTitle();
-	abstract function getFormAttributes();
 
 	function cssTag($url) {
 		echo HTML::tag("link", array(
