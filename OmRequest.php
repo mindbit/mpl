@@ -36,8 +36,8 @@ abstract class OmRequest extends BaseRequest {
 	protected $omFieldNames;
 
 	abstract function createOm();
-	abstract function decode();
-	abstract function doFetch();
+	protected abstract function decode();
+	protected abstract function doFetch();
 
 	protected function init() {
 		$this->om = $this->createOm();

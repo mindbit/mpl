@@ -17,15 +17,22 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+require_once "OmRequest.php";
 require_once "HTML.php";
 
 abstract class BaseForm {
 	protected $request;
+	protected $om;
 
 	function __construct() {
 		$this->request = $this->createRequest();
-		if (null !== $this->request)
-			$this->request->dispatch();
+		if (null === $this->request)
+			return;
+
+		$this->request->dispatch();
+
+		if ($this->request instanceof OmRequest)
+			$this->om = $this->request->getOm();
 	}
 
 	function createRequest() {

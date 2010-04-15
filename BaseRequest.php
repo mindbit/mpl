@@ -18,7 +18,17 @@
  */
 
 abstract class BaseRequest {
+	protected $state;
+
 	abstract function dispatch();
+
+	function getState() {
+		return $this->state;
+	}
+
+	function setState($state) {
+		$this->state = $state;
+	}
 }
 
 ?>
