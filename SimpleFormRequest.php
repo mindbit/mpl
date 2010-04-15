@@ -20,6 +20,8 @@
 require_once 'OmRequest.php';
 
 abstract class SimpleFormRequest extends OmRequest {
+	const OPERATION_NEW = 5;
+
 	protected function decode() {
 		$this->data = &$_REQUEST;
 
@@ -42,15 +44,26 @@ abstract class SimpleFormRequest extends OmRequest {
 			$this->operationType = self::OPERATION_REMOVE;
 			return;
 		}
+
+		if (isset($_REQUEST['__new'])) {
+			$this->operationType = self::OPERATION_NEW;
+			return;
+		}
 	}
 
 	protected function doFetch() {
 		$this->om = $this->omPeer->retrieveByPk($_REQUEST['__id']);
 	}
 
+	protected function doNew() {
+	}
+
 	function dispatch() {
 		try {
 			parent::dispatch();
+			if ($this->operationType == self::OPERATION_NEW) {
+				$this->doNew();
+			}
 		} catch (Exception $e) {
 			$this->err[] = $e->getMessage();
 		}
