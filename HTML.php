@@ -117,4 +117,18 @@ class HTML {
 		$ret = self::tag("select", $attr) . $ret . '</select>';
 		return $ret;
 	}
+
+	static function hidden($name, $value) {
+		return '<input type="hidden" name="' . self::entities($name) . '" value="' .
+			self::entities($value) . '">';
+	}
+
+
+	static function submitButton($submit) {
+		$name = $submit["name"];
+		$submit["name"] .= "button";
+		$submit["type"] = "submit";
+		$ret = self::tag("input", $submit) . self::hidden($name, "1");
+		return $ret;
+	}
 }
