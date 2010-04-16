@@ -22,6 +22,9 @@ require_once 'OmRequest.php';
 abstract class SimpleFormRequest extends OmRequest {
 	const OPERATION_NEW = 5;
 
+	const STATE_ADD = 1;
+	const STATE_UPDATE = 2;
+
 	protected function decode() {
 		$this->data = &$_REQUEST;
 
@@ -66,6 +69,20 @@ abstract class SimpleFormRequest extends OmRequest {
 			}
 		} catch (Exception $e) {
 			$this->err[] = $e->getMessage();
+		}
+
+		switch($this->operationType) {
+		case OPERATION_NEW:
+		case OPERATION_REMOVE:
+			$this->setState(self::STATE_ADD);
+			break;
+		case OPERATION_ADD:
+			$this->setState(empty($this->err) ? self::STATE_UPDATE: self::STATE_ADD);
+			break;
+		case OPERATION_FETCH:
+		case OPERATION_UPDATE:
+			$this->setState(self::STATE_UPDATE);
+			break;
 		}
 	}
 }
