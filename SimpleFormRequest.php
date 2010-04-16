@@ -72,15 +72,15 @@ abstract class SimpleFormRequest extends OmRequest {
 		}
 
 		switch($this->operationType) {
-		case OPERATION_NEW:
-		case OPERATION_REMOVE:
+		case self::OPERATION_NEW:
+		case self::OPERATION_REMOVE:
 			$this->setState(self::STATE_ADD);
 			break;
-		case OPERATION_ADD:
+		case self::OPERATION_ADD:
 			$this->setState(empty($this->err) ? self::STATE_UPDATE: self::STATE_ADD);
 			break;
-		case OPERATION_FETCH:
-		case OPERATION_UPDATE:
+		case self::OPERATION_FETCH:
+		case self::OPERATION_UPDATE:
 			$this->setState(self::STATE_UPDATE);
 			break;
 		}
