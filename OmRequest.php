@@ -80,13 +80,19 @@ abstract class OmRequest extends BaseRequest {
 		return $ret;
 	}
 
+	protected function validate() {
+		return true;
+	}
+
 	protected function doSave() {
 		$this->setOmFields($this->arrayToOm());
+		if (!$this->validate())
+			return;
 		if ($this->om->validate()) {
 			$this->om->save();
 			return;
 		}
-		$this->err = $this->om->getValidationErrors();
+		$this->err = $this->om->getValidationFailures();
 	}
 
 	protected function doRemove() {
@@ -96,6 +102,10 @@ abstract class OmRequest extends BaseRequest {
 
 	function getOm() {
 		return $this->om;
+	}
+
+	function getErrors() {
+		return $this->err;
 	}
 
 	function dispatch() {
