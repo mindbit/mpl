@@ -26,7 +26,12 @@ abstract class SimpleFormRequest extends OmRequest {
 	const STATE_UPDATE = 2;
 
 	protected function decode() {
-		$this->data = &$_REQUEST;
+		$this->data = array();
+
+		foreach ($this->omFieldNames as $field) {
+			if (isset($_REQUEST[$field]))
+				$this->data[$field] = $_REQUEST[$field];
+		}
 
 		if (isset($_REQUEST['__id'])) {
 			$this->operationType = self::OPERATION_FETCH;
