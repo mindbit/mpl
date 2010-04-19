@@ -28,7 +28,6 @@ abstract class OmRequest extends BaseRequest {
 
 	protected $operationType;
 	protected $data;
-	protected $err;
 
 	protected $om;
 	protected $omPeer;
@@ -102,10 +101,6 @@ abstract class OmRequest extends BaseRequest {
 
 	function getOm() {
 		return $this->om;
-	}
-
-	function getErrors() {
-		return $this->err;
 	}
 
 	function dispatch() {

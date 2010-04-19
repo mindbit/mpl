@@ -19,6 +19,7 @@
 
 abstract class BaseRequest {
 	protected $state;
+	protected $err;
 
 	abstract function dispatch();
 
@@ -28,6 +29,10 @@ abstract class BaseRequest {
 
 	function setState($state) {
 		$this->state = $state;
+	}
+
+	function getErrors() {
+		return $this->err;
 	}
 }
 
