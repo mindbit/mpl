@@ -18,14 +18,15 @@
  */
 
 require_once "BaseForm.php";
+require_once "Locale.php";
 
 abstract class SimpleForm extends BaseForm {
 	function getSubmitAddText() {
-		return _("         Adauga         ");
+		return str_pad(__("Add"), 25, " ", STR_PAD_BOTH);
 	}
 
 	function getSubmitUpdateText() {
-		return _("         Actualizeaza         ");
+		return str_pad(__("Update"), 25, " ", STR_PAD_BOTH);
 	}
 
 	function getSubmitAttr() {
