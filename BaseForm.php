@@ -18,10 +18,10 @@
  */
 
 require_once "OmRequest.php";
+require_once "RequestDispatcher.php";
 require_once "HTML.php";
 
-abstract class BaseForm {
-	protected $request;
+abstract class BaseForm extends RequestDispatcher {
 	protected $om;
 
 	abstract function form();
@@ -29,18 +29,10 @@ abstract class BaseForm {
 	abstract function getFormAttributes();
 
 	function __construct() {
-		$this->request = $this->createRequest();
-		if (null === $this->request)
-			return;
-
-		$this->request->dispatch();
+		parent::__construct();
 
 		if ($this->request instanceof OmRequest)
 			$this->om = $this->request->getOm();
-	}
-
-	function createRequest() {
-		return null;
 	}
 
 	function write() {
