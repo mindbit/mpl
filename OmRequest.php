@@ -87,11 +87,16 @@ abstract class OmRequest extends BaseRequest {
 		$this->setOmFields($this->arrayToOm());
 		if (!$this->validate())
 			return;
-		if ($this->om->validate()) {
-			$this->om->save();
+		if (!$this->om->validate()) {
+			$this->err = array_merge($this->err, $this->om->getValidationFailures());
 			return;
 		}
-		$this->err = $this->om->getValidationFailures();
+		$this->__doSave();
+	}
+
+	protected function __doSave() {
+		if (empty($this->err))
+			$this->om->save();
 	}
 
 	protected function doRemove() {
