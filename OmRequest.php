@@ -104,6 +104,10 @@ abstract class OmRequest extends BaseRequest {
 		$this->om->delete();
 	}
 
+	function getOperationType() {
+		return $this->operationType;
+	}
+
 	function getOm() {
 		return $this->om;
 	}
