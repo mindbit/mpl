@@ -18,6 +18,11 @@
  */
 
 class HTML {
+	// tag closing styles
+	const TAG_CLOSE_NONE	= false;
+	const TAG_CLOSE_HTML	= 1;
+	const TAG_CLOSE_XHTML	= true;
+
 	static function entities($string, $quote_style = ENT_COMPAT) {
 		return htmlentities($string, $quote_style, "UTF-8");
 	}
@@ -30,9 +35,17 @@ class HTML {
 		return $str;
 	}
 
-	static function tag($name, $attr = array(), $void = false) {
-		$ret = "<" . $name . self::attr($attr) . ($void ? "/>" : ">");
-		return $ret;
+	static function tag($name, $attr = array(), $close = HTML::TAG_CLOSE_NONE) {
+		$ret = "<" . $name . self::attr($attr);
+
+		if ($close === HTML::TAG_CLOSE_NONE)
+			return $ret . ">";
+
+		if ($close === HTML::TAG_CLOSE_HTML)
+			return $ret . "</" . $name . ">";
+
+		if ($close === HTML::TAG_CLOSE_XHTML)
+			return $ret . ">";
 	}
 
 	static function select($name, $selectedKey, $options, $isMultiple = false, 
