@@ -42,7 +42,7 @@ class HTML {
 			return $ret . ">";
 
 		if ($close === HTML::TAG_CLOSE_HTML)
-			return $ret . "</" . $name . ">";
+			return $ret . "></" . $name . ">";
 
 		if ($close === HTML::TAG_CLOSE_XHTML)
 			return $ret . ">";
