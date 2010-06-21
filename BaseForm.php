@@ -50,6 +50,9 @@ abstract class BaseForm extends RequestDispatcher {
 			self::DT_XHTML_1_1				=> '"-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"'
 			);
 
+	const MEDIA_SCREEN		= "screen";
+	const MEDIA_PRINT		= "print";
+
 	protected $om;
 
 	abstract function form();
@@ -114,12 +117,16 @@ abstract class BaseForm extends RequestDispatcher {
 		echo "</form>";
 	}
 
-	function cssTag($url) {
-		echo $this->tag("link", array(
+	function cssTag($url, $media = null) {
+		$attr = array(
 					"rel"	=> "stylesheet",
 					"href"	=> $url,
 					"type"	=> "text/css"
-					), true);
+					);
+		if ($media !== null)
+			$attr["media"] = $media;
+		echo $this->tag("link", $attr,
+				($this->getDoctype() & self::DT_XHTML) ? HTML::TAG_CLOSE_XHTML : HTML::TAG_CLOSE_NONE);
 	}
 
 	function jsTag($url) {
