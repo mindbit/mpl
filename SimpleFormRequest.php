@@ -38,12 +38,12 @@ abstract class SimpleFormRequest extends OmRequest {
 			return;
 		}
 
-		if (isset($_REQUEST['__update'])) {
+		if (isset($_REQUEST['__update']) && $_REQUEST['__update']) {
 			$this->operationType = self::OPERATION_UPDATE;
 			return;
 		}
 
-		if (isset($_REQUEST['__add'])) {
+		if (isset($_REQUEST['__add']) && $_REQUEST['__add']) {
 			$this->operationType = self::OPERATION_ADD;
 			return;
 		}
