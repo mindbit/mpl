@@ -124,11 +124,11 @@ abstract class AbstractErrorHandler {
 	 * Parcurge o matrice si inlocuieste referintele spre
 	 * contextul global de variabile cu sirul "__GLOBALS__"
 	 */
-	function removeGlobals(&$a) {
+	function __removeGlobals(&$a) {
 		//FIXME: ar trebui sa parcurg si membrii obiectelor
 		if(!is_array($a))
 			return;
-		if(isset($a["errorHandlerInstance"])) {
+		if(isset($a["__GLOBALS_MARK__"])) {
 			$a = "__GLOBALS__";
 			return;
 		}
@@ -140,8 +140,14 @@ abstract class AbstractErrorHandler {
 				continue;
 			}
 			*/
-			$this->removeGlobals($a[$k]);
+			$this->__removeGlobals($a[$k]);
 		}
+	}
+
+	function removeGlobals(&$a) {
+		$GLOBALS["__GLOBALS_MARK__"] = true;
+		$this->__removeGlobals($a);
+		unset($GLOBALS["__GLOBALS_MARK__"]);
 	}
 	
 	/**
