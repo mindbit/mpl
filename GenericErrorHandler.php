@@ -34,10 +34,58 @@ class GenericErrorHandler extends AbstractErrorHandler {
 	const DISPLAY_TEXT = 2;
 
 	protected $display = self::DISPLAY_NONE;
+	protected $outputBuffering = false;
+	protected $initialObLevel;
 
 	function __construct() {
 		$this->display = $_SERVER['SERVER_NAME'] ?
 			self::DISPLAY_HTML : self::DISPLAY_TEXT;
+	}
+
+	function onActivate() {
+		if ($this->outputBuffering) {
+			$this->initialObLevel = ob_get_level();
+			if (!$this->initialObLevel)
+				ob_start();
+		}
+	}
+
+	function onDeactivate() {
+		if ($this->outputBuffering) {
+			while (ob_get_level() > $this->initialObLevel)
+				ob_end_flush();
+		}
+	}
+
+	/**
+	 * Get the output buffer contents on ALL LEVELS and also DISABLE
+	 * outbut buffering.
+	 */
+	function getOutputBuffer() {
+		$ret = "";
+		while (ob_get_level()) {
+			$ret = ob_get_contents() . $ret;
+			ob_end_clean();
+		}
+		return $ret;
+	}
+
+	/**
+	 * Disabled output buffering on all levels and discards any output
+	 * that may have been captured (buffered).
+	 *
+	 * This method is used when a large amount of data needs to be sent
+	 * to the client (usually this happens with file download handlers
+	 * or when data is fetched from another server using the curl
+	 * extension).
+	 */
+	function disableBuffering() {
+		while (ob_get_level())
+			echo ob_get_clean();
+		// the trick is that with ob_get_clean() we can still send headers
+		// if we actually had no output (as opposed to ob_end_flush() that
+		// always sends data to the client regardless if we had any output
+		// or not)
 	}
 
 	function displayErrorHeader() {
@@ -177,6 +225,9 @@ class GenericErrorHandler extends AbstractErrorHandler {
 		$data["renderedBacktrace"] = $this->renderBacktrace($data["backtrace"]);
 		$data["dumpedContext"] = $this->varDump($data["context"]);
 		$this->removeGlobals($data["context"]);
+
+		if ($this->outputBuffering)
+			$data["outputBuffer"] = $this->getOutputBuffer();
 
 		// log
 		$this->logErrorHeader();
