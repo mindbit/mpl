@@ -40,7 +40,7 @@ abstract class AbstractErrorHandler {
 	 * sirurile corespunzatoare
 	 */
 	function errorCodeToStr($code) {
-		switch($code) {
+		switch ($code) {
 		case E_ERROR:					return "ERROR";
 		case E_WARNING:					return "WARNING";
 		case E_PARSE:					return "PARSE";
@@ -151,11 +151,11 @@ abstract class AbstractErrorHandler {
 	}
 	
 	/**
-	 * Este metoda care trebuie inregistrata prin set_error_handler()
+	 * This is the method that should be registered with
+	 * set_error_handler().
 	 *
-	 * Metoda asta NU trebuie reimplementata in clasele
-	 * derivate, pentru ca este doar un wrapper pentru ::HandleException()
-	 * plus un test dupa masca de erori.
+	 * This is only a wrapper for __handleError() and a test against the
+	 * error mask, so descendant classes shouldn't override this.
 	 */
 	final function handleError($code, $desc, $filename, $line, &$context) {
 		if ($this->mask & $code)
@@ -163,31 +163,37 @@ abstract class AbstractErrorHandler {
 		if (isset($GLOBALS["__EXC_reentrancy"]))
 			$this->handleReentrancy();
 		$GLOBALS["__EXC_reentrancy"] = true;
-		$this->__handleError($code, $desc, $filename, $line, $context);
+		$this->__handleError(array(
+					"code"			=> $code,
+					"description"	=> $desc,
+					"filename"		=> $filename,
+					"line"			=> $line,
+					"context"		=> $context
+					));
 	}
 	
 	/**
-	 * Adevaratul handler al exceptiilor
-	 * @abstract
+	 * Actual error handler function.
 	 *
-	 * Este metoda care trateaza efectiv exceptiile. Metoda este "abstracta",
-	 * adica clasele derivate sunt obligate sa o reimplementeze pentru o
-	 * tratare corecta a exceptiilor.
+	 * This is the method that actually handles errors. The method is
+	 * abstract, so descendant classes must implement it to properly
+	 * handle errors.
 	 */
-	abstract protected function __handleError($code, $desc, $filename, $line, &$context, $backtrace = null);
+	abstract protected function __handleError($data);
 
 	function handleException($exception) {
 		$context = null;
 		// $context = $exception->getCode();
 		// $context = $exception->getTrace();
 		$backtrace = $this->normalizeBacktrace($exception->getTrace());
-		$this->__handleError(
-				E_UNHANDLED_EXCEPTION,		// code
-				$exception->getMessage(),	// desc
-				$exception->getFile(),		// filename
-				$exception->getLine(),		// line
-				$context,					// context
-				$backtrace);				// backtrace
+		$this->__handleError(array(
+					"code"			=> E_UNHANDLED_EXCEPTION,
+					"description"	=> $exception->getMessage(),
+					"filename"		=> $exception->getFile(),
+					"line"			=> $exception->getLine(),
+					"context"		=> &$context,
+					"backtrace"		=> $backtrace
+					));
 	}
 	
 	/**
