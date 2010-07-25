@@ -99,6 +99,7 @@ abstract class RestRequest extends OmRequest {
 	protected $oldValues;
 
 	protected $response;
+	protected $joinMap = array();
 
 	function decode() {
 		/* Data sources must use the postMessage dataProtocol */
@@ -151,13 +152,44 @@ abstract class RestRequest extends OmRequest {
 		$this->response = new RestResponse();
 	}
 
+	function addJoinMap($om, $joinParams) {
+		$table = constant("Base" . get_class($om->getPeer()) . "::TABLE_NAME");
+		if (!isset($this->joinMap[$table]))
+			$this->joinMap[$table] = array(
+					"peer" => $om->getPeer(),
+					"join" => array()
+					);
+		$this->joinMap[$table]["join"][] = $joinParams;
+	}
+
 	function buildFetchCriteria() {
 		$c = new Criteria();
 		if (null !== $this->startRow) {
 			$c->setLimit($this->endRow - $this->startRow);
 			$c->setOffset($this->startRow);
 		}
-		$omFields = $this->arrayToOm($this->data);
+
+		// build a new array of fields that are bound directly to our
+		// OM; mapped fields need to be taken care of separately
+		$omData = array();
+		$mapped = array();
+		foreach ($this->data as $k => $v) {
+			if (strstr($k, ".") === false) {
+				$omData[$k] = $v;
+				continue;
+			}
+			list($table, $field) = explode(".", $k, 2);
+			if (!isset($mapped[$table])) {
+				$mapped[$table] = true;
+				foreach ($this->joinMap[$table]["join"] as $params)
+					call_user_func_array(array($c, "addJoin"), $params);
+				$colName = $this->joinMap[$table]["peer"]->translateFieldName($field,
+						BasePeer::TYPE_FIELDNAME, BasePeer::TYPE_COLNAME);
+				$c->add($colName, $v);
+			}
+		}
+
+		$omFields = $this->arrayToOm($omData);
 		foreach ($omFields as $field => $value) {
 			$colName = $this->omPeer->translateFieldName($field, BasePeer::TYPE_FIELDNAME,
 					BasePeer::TYPE_COLNAME);
