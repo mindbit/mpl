@@ -151,8 +151,7 @@ abstract class RestRequest extends OmRequest {
 		$this->response = new RestResponse();
 	}
 
-
-	function doFetch() {
+	function buildFetchCriteria() {
 		$c = new Criteria();
 		if (null !== $this->startRow) {
 			$c->setLimit($this->endRow - $this->startRow);
@@ -164,7 +163,11 @@ abstract class RestRequest extends OmRequest {
 					BasePeer::TYPE_COLNAME);
 			$c->add($colName, $value);
 		}
-		$objs = $this->omPeer->doSelect($c);
+		return $c;
+	}
+
+	function doFetch() {
+		$objs = $this->omPeer->doSelect($this->buildFetchCriteria());
 		foreach ($objs as $obj)
 			$this->response->addData($this->omToArray($obj));
 	}
