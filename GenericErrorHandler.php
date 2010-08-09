@@ -102,7 +102,7 @@ class GenericErrorHandler extends AbstractErrorHandler {
 		case self::DISPLAY_TEXT:
 			echo AsciiTable::renderRowSeparator(array(EXC_TABLE_WIDTH + 3));
 			echo AsciiTable::renderCells(
-					array('EXCEPTION'), array(EXC_TABLE_WIDTH + 3),
+					array('ERROR'), array(EXC_TABLE_WIDTH + 3),
 					array(1), array(STR_ALIGN_CENTER));
 			echo AsciiTable::renderRowSeparator(
 					array(EXC_LEFT_WIDTH, EXC_RIGHT_WIDTH));
@@ -167,7 +167,7 @@ class GenericErrorHandler extends AbstractErrorHandler {
 			echo AsciiTable::renderRowSeparator(
 					array(EXC_LEFT_WIDTH, EXC_RIGHT_WIDTH));
 			echo AsciiTable::renderCells(
-					array("Context", $data["renderedContext"]),
+					array("Context", $data["dumpedContext"]),
 					array(EXC_LEFT_WIDTH, EXC_RIGHT_WIDTH));
 			echo AsciiTable::renderRowSeparator(
 					array(EXC_LEFT_WIDTH, EXC_RIGHT_WIDTH));
