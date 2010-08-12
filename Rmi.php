@@ -1,4 +1,5 @@
 <?
+require_once "AbstractErrorHandler.php";
 
 class RmiMessageHeader {
 	protected $version = 1;
@@ -28,11 +29,11 @@ abstract class RmiMessage {
 			$chunk = fread($stream, 24);
 			if ($chunk === false)
 				throw new Exception("read failed");
-			if (!strlen($chunk))
-				throw new Exception("premature end of data");
+			if (!strlen($chunk)) // the other end has closed
+				return null;
 		}
-		if (strpos($buf, "O:16:\"RmiMessageHeader\"") !== 0) { var_dump($buf);
-			throw new Exception("data format error");}
+		if (strpos($buf, "O:16:\"RmiMessageHeader\"") !== 0)
+			throw new Exception("data format error");
 		$chunk = $buf;
 		$pos = 0;
 		while (($_pos = strpos($chunk, '}')) === false) {
@@ -68,6 +69,8 @@ abstract class RmiMessage {
 			$fwrite = fwrite($stream, substr($data, $written));
 			if ($fwrite === false)
 				throw new Exception("write failed");
+			if (!$fwrite)
+				throw new Exception("broken pipe");
 		}
 		fflush($stream);
 	}
@@ -128,28 +131,41 @@ class RmiCallMethodRequest extends RmiBaseRequest {
 
 abstract class RmiConnector {
 	protected $streamIn, $streamOut;
+
+	function getStreamIn() {
+		return $this->streamIn;
+	}
+
+	function getStreamOut() {
+		return $this->streamOut;
+	}
 }
 
 abstract class RmiClient extends RmiConnector {
 	function createInstance($class) {
 		$args = func_get_args();
 		array_shift($args);
-		$msg = new RmiNewInstanceRequest($class, $args);
-		$msg->write($this->streamOut);
-		$response = RmiMessage::read($this->streamIn);
-		assert(is_a($response, "RmiNewInstanceResponse"));
+		$msg = $this->dispatch(new RmiNewInstanceRequest($class, $args));
+		assert(is_a($msg, "RmiNewInstanceResponse"));
 		$instance = new RmiStub();
-		$instance->setRmiId($response->getRmiId());
+		$instance->setRmiId($msg->getRmiId());
 		$instance->setRmiClient($this);
 		return $instance;
 	}
 
 	function callMethod($object, $method, $args) {
-		$msg = New RmiCallMethodRequest($object->getRmiId(), $method, $args);
-		$msg->write($this->streamOut);
+		$msg = $this->dispatch(new RmiCallMethodRequest($object->getRmiId(), $method, $args));
+		assert(is_a($msg, "RmiCallMethodResponse"));
+		return $msg->getRetVal();
+	}
+
+	function dispatch($request) {
+		$request->write($this->streamOut);
 		$response = RmiMessage::read($this->streamIn);
-		assert(is_a($response, "RmiCallMethodResponse"));
-		return $response->getRetVal();
+		assert(is_a($response, "RmiResponse"));
+		if (is_a($response, "RmiExceptionResponse"))
+			throw new Exception("Exception on RMI server side", 0, $response->getException());
+		return $response;
 	}
 }
 
@@ -174,6 +190,7 @@ class ProcOpenRmiClient extends RmiClient {
 abstract class RmiServer extends RmiConnector {
 	protected static $registry = array();
 	protected static $serial = 0;
+	protected static $serverInstance;
 
 	static function uniqid() {
 		return uniqid(sprintf("%04x%04x.", mt_rand() & 0xffff, ++self::$serial & 0xffff), true);
@@ -194,15 +211,23 @@ abstract class RmiServer extends RmiConnector {
 			self::$registry[$rmiId] : null;
 	}
 
-	function run() {
+	final function run() {
+		self::$serverInstance = $this;
 		set_time_limit(0);
+		ErrorHandler::setHandler(new RmiServerErrorHandler());
 		do {
 			$msg = RmiMessage::read($this->streamIn);
+			if ($msg === null)
+				break;
 			assert(is_a($msg, "RmiRequest"));
 			$response = $msg->process();
 			if ($response !== null)
 				$response->write($this->streamOut);
 		} while ($response !== null);
+	}
+
+	static function getInstance() {
+		return self::$serverInstance;
 	}
 }
 
@@ -260,6 +285,25 @@ class RmiCallMethodResponse extends RmiBaseResponse {
 	}
 }
 
+class RmiExceptionResponse extends RmiResponse {
+	protected $exception;
+
+	function __construct($exception) {
+		$this->exception = $exception;
+	}
+
+	function getException() {
+		return $this->exception;
+	}
+
+	function serialize() {
+		return serialize($this);
+	}
+}
+
+class RmiFatalExceptionResponse extends RmiExceptionResponse {
+}
+
 class RmiStub {
 	protected $__rmiId;
 	protected $__rmiClient;
@@ -285,4 +329,19 @@ class RmiStub {
 	}
 }
 
+class RmiServerErrorHandler extends AbstractErrorHandler {
+	protected function __handleError($data) {
+		throw new ErrorException($data["description"], $data["code"], 0, $data["filename"], $data["line"]);
+	}
+
+	protected function __handleException($exception) {
+		// For unknown reasons, we have an uncaught exception (it
+		// probably happened outside the real-object call code).
+		// As a last resort, try to respond with an
+		// RmiFatalExceptionResponse, since we are going to die
+		// anyway.
+		$msg = new RmiFatalExceptionResponse($exception);
+		$msg->write(RmiServer::getInstance()->getStreamOut());
+	}
+}
 ?>

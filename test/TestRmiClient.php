@@ -13,7 +13,7 @@ $cmd = "/usr/bin/php -q -d include_path=" . $shellBasePath . " " .
 
 echo "Starting server (" . $cmd . ") ... ";
 $client = new ProcOpenRmiClient($cmd);
-		
+
 echo "OK\n";
 
 echo "\nCreating instance... ";
