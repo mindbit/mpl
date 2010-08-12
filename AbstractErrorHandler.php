@@ -29,11 +29,8 @@ abstract class AbstractErrorHandler {
 	 */
 	protected $mask;
 
-	/**
-	 * Matricea de obiecte de tip exceptie inregistrate pentru
-	 * recovery
-	protected $recovery = array();
-	 */
+	protected static $isHandlingError = false;
+	protected static $isHandlingException = false;
 
 	/**
 	 * Translatia constantelor (numerice) reprezentand erori in
@@ -160,9 +157,9 @@ abstract class AbstractErrorHandler {
 	final function handleError($code, $desc, $filename, $line, &$context) {
 		if ($this->mask & $code)
 			return;
-		if (isset($GLOBALS["__EXC_reentrancy"]))
+		if (self::$isHandlingError)
 			$this->handleReentrancy();
-		$GLOBALS["__EXC_reentrancy"] = true;
+		self::$isHandlingError = true;
 		$this->__handleError(array(
 					"code"			=> $code,
 					"description"	=> $desc,
@@ -170,6 +167,7 @@ abstract class AbstractErrorHandler {
 					"line"			=> $line,
 					"context"		=> $context
 					));
+		self::$isHandlingError = false;
 	}
 	
 	/**
@@ -182,18 +180,36 @@ abstract class AbstractErrorHandler {
 	abstract protected function __handleError($data);
 
 	function handleException($exception) {
-		$context = null;
-		// $context = $exception->getCode();
-		// $context = $exception->getTrace();
-		$backtrace = $this->normalizeBacktrace($exception->getTrace());
-		$this->__handleError(array(
-					"code"			=> E_UNHANDLED_EXCEPTION,
-					"description"	=> $exception->getMessage(),
-					"filename"		=> $exception->getFile(),
-					"line"			=> $exception->getLine(),
-					"context"		=> &$context,
-					"backtrace"		=> $backtrace
-					));
+		// We detect reentrancy independent of the handleError() method
+		// to behave nicely in the following scenario:
+		// * __handleError throws an exception (either explicitly or
+		//   implicitly)
+		// * the exception is not caught anywhere, so we call
+		//   __handleError again to cleanup
+		if (self::$isHandlingException)
+			$this->handleReentrancy();
+		self::$isHandlingException = true;
+		$this->__handleException($exception);
+		self::$isHandlingException = false;
+	}
+
+	protected function __handleException($exception) {
+		// Protect against an uncaught exception that was implicitly
+		// thrown from the error handling code.
+		if (self::$isHandlingError)
+			$this->handleReentrancy();
+		$this->__handleError($this->exceptionToErrorData($exception));
+	}
+
+	function exceptionToErrorData($e) {
+		return array(
+				"code"			=> E_UNHANDLED_EXCEPTION,
+				"description"	=> $e->getMessage(),
+				"filename"		=> $e->getFile(),
+				"line"			=> $e->getLine(),
+				"context"		=> null,
+				"backtrace"		=> $this->normalizeBacktrace($e->getTrace())
+				);
 	}
 	
 	/**

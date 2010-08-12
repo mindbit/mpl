@@ -220,7 +220,7 @@ class GenericErrorHandler extends AbstractErrorHandler {
 	function log($message) {
 	}
 
-	function __handleError($data) {
+	function handleSingleError($data) {
 		$data["textCode"] = $this->errorCodeToStr($data["code"]) . " (" . $data["code"] . ")";
 		$data["renderedBacktrace"] = $this->renderBacktrace($data["backtrace"]);
 		$data["dumpedContext"] = $this->varDump($data["context"]);
@@ -238,23 +238,20 @@ class GenericErrorHandler extends AbstractErrorHandler {
 		$this->displayErrorHeader();
 		$this->displayErrorBody($data);
 		$this->displayErrorFooter();
-		/* FIXME: pentru RMI ar trebui sa schimb exception handlerul in loc
-		   sa tratez aici afisarea exceptiei remote /
-		if(isset($GLOBALS['RMI_RemoteException'])) {
-			echo('<tr><th bgcolor="black" colspan=2><font color="white">'.
-					'Remote exception details</th></tr>');
-			$bt=nl2br($this->renderBacktrace(
-						$GLOBALS['RMI_RemoteException']['backtrace']));
-			$this->RenderExceptionElements(
-					$GLOBALS['RMI_RemoteException']['code'],
-					$GLOBALS['RMI_RemoteException']['description'],
-					$GLOBALS['RMI_RemoteException']['filename'],
-					$GLOBALS['RMI_RemoteException']['line'],
-					$GLOBALS['RMI_RemoteException']['context'],
-					$bt);
-		}
-		*/
+	}
+
+	function __handleError($data) {
+		$this->handleSingleError($data);
 		exit;
+	}
+
+	function __handleException($exception) {
+		// Protect against an uncaught exception that was implicitly
+		// thrown from the error handling code.
+		if (self::$isHandlingError)
+			$this->handleReentrancy();
+		for ($e = $exception; $e !== null; $e = $e->getPrevious())
+			$this->handleSingleError($this->exceptionToErrorData($e));
 	}
 
 	/* FIXME
