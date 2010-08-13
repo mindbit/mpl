@@ -104,9 +104,13 @@ class RmiNewInstanceRequest extends RmiBaseRequest {
 
 	function process() {
 		$refClass = new ReflectionClass($this->class);
-		$instance = $refClass->getConstructor() === null ?
-			$refClass->newInstance() :
-			$refClass->newInstanceArgs($this->args);
+		try {
+			$instance = $refClass->getConstructor() === null ?
+				$refClass->newInstance() :
+				$refClass->newInstanceArgs($this->args);
+		} catch (Exception $e) {
+			return new RmiExceptionResponse($e);
+		}
 		return new RmiNewInstanceResponse(RmiServer::registerObject($instance), null);
 	}
 }
@@ -124,7 +128,11 @@ class RmiCallMethodRequest extends RmiBaseRequest {
 	function process() {
 		$instance = RmiServer::getObject($this->rmiId);
 		$refObject = new ReflectionObject($instance);
-		$ret = call_user_func_array(array($instance, $this->method), $this->args);
+		try {
+			$ret = call_user_func_array(array($instance, $this->method), $this->args);
+		} catch (Exception $e) {
+			return new RmiExceptionResponse($e);
+		}
 		return new RmiCallMethodResponse($ret, null);
 	}
 }
@@ -164,8 +172,12 @@ abstract class RmiClient extends RmiConnector {
 		$response = RmiMessage::read($this->streamIn);
 		assert(is_a($response, "RmiResponse"));
 		if (is_a($response, "RmiExceptionResponse"))
-			throw new Exception("Exception on RMI server side", 0, $response->getException());
+			$this->handleRemoteException($response->getException());
 		return $response;
+	}
+
+	function handleRemoteException($e) {
+		throw new Exception("Exception on RMI server side", 0, $e);
 	}
 }
 

@@ -24,5 +24,16 @@ echo "\nTesting foo(2,3)... ";
 $ret = $test->foo(2, 3);
 echo "OK - result is " . ErrorHandler::varDump($ret) . "\n";
 
+echo "\nTesting doError()... ";
+try {
+	$ret = $test->doError();
+	echo "FAIL - nothing happened\n";
+} catch (Exception $e) {
+	echo "Caught exception " . $e->getMessage();
+	while (($e = $e->getPrevious()) !== null)
+		echo "; Nested exception: " . $e->getMessage();
+	echo "\n";
+}
+
 echo "\nDone\n";
 ?>

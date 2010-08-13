@@ -8,6 +8,10 @@ class TestServer {
 	function foo($x, $y) {
 		return $x + $y;
 	}
+
+	function doError() {
+		return $iAmUndefined;
+	}
 }
 
 $server = new StdInOutRmiServer();
