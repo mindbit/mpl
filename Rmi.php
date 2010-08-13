@@ -32,8 +32,19 @@ abstract class RmiMessage {
 			if (!strlen($chunk)) // the other end has closed
 				return null;
 		}
-		if (strpos($buf, "O:16:\"RmiMessageHeader\"") !== 0)
-			throw new Exception("data format error");
+		if (strpos($buf, "O:16:\"RmiMessageHeader\"") !== 0) {
+			// since the protocol is out-of-sync anyway, try to read
+			// as much as possible and give the user more info
+			$read = array($stream);
+			$write = array();
+			$except = array();
+			stream_select($read, $write, $except, 0, 0);
+			if (!empty($read)) {
+				$chunk = fread($stream, 8192);
+				$buf .= $chunk;
+			}
+			throw new Exception("data format error: " . $buf);
+		}
 		$chunk = $buf;
 		$pos = 0;
 		while (($_pos = strpos($chunk, '}')) === false) {
