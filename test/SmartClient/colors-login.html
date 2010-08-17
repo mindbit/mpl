@@ -1,0 +1,73 @@
+<html>
+<head>
+<script>var isomorphicDir="/isomorphic/";</script>
+<script src="/isomorphic/client/modules/ISC_Core.js"></script>
+<script src="/isomorphic/client/modules/ISC_Foundation.js"></script>
+<script src="/isomorphic/client/modules/ISC_Containers.js"></script>
+<script src="/isomorphic/client/modules/ISC_Grids.js"></script>
+<script src="/isomorphic/client/modules/ISC_Forms.js"></script>
+<script src="/isomorphic/client/modules/ISC_DataBinding.js"></script>
+<script src="/isomorphic/skins/TreeFrog/load_skin.js"></script>
+<script src="/isomorphic/login/reloginFlow.js"></script>
+<script src="/mpl/web/js/MplAuthenticator.js"></script>
+</head>
+<body>
+<script>
+
+function buildInterface() {
+	isc.RestDataSource.create({
+		ID:"colors",
+		dataFormat:"json",
+		dataURL:"ds-colors-login.php",
+		fields:[
+			{type: "sequence", name: "id", primaryKey: true},
+			{title:"Color", name:"color"},
+			{title:"HTML", name:"html"}
+		],
+		operationBindings:[
+		{operationType:"fetch", dataProtocol:"postMessage"},
+		{operationType:"add", dataProtocol:"postMessage"},
+		{operationType:"remove", dataProtocol:"postMessage"},
+		{operationType:"update", dataProtocol:"postMessage"}
+		],
+	});
+
+	isc.VLayout.create({
+		members: [
+			isc.ListGrid.create({
+				dataSource: isc.DS.get("colors"),
+				autoFetchData: true,
+				fields: [
+					{name: "color"},
+					{name: "html"}
+				],
+				width: 300,
+				height: 100
+			}),
+
+			isc.Label.create({
+				showEdges: true,
+				contents: "<b>Username</b> " + isc.MplAuthenticator.session.username
+			}),
+
+			isc.Label.create({
+				showEdges: true,
+				contents: "<b>Real name</b> " + isc.MplAuthenticator.session.realName
+			}),
+
+			isc.Button.create({
+				title: "Logout",
+				click: function () {
+					isc.MplAuthenticator.logout(function () {
+						document.location.href = document.location.href;
+					});
+				}
+			})
+		]
+	});
+}
+
+isc.MplAuthenticator.validateSession(buildInterface);
+</script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+<html>
+<head>
+<script>var isomorphicDir="/isomorphic/";</script>
+<script src="/isomorphic/system/modules/ISC_Core.js"></script>
+<script src="/isomorphic/system/modules/ISC_Foundation.js"></script>
+<script src="/isomorphic/system/modules/ISC_Containers.js"></script>
+<script src="/isomorphic/system/modules/ISC_Grids.js"></script>
+<script src="/isomorphic/system/modules/ISC_Forms.js"></script>
+<script src="/isomorphic/system/modules/ISC_DataBinding.js"></script>
+<script src="/isomorphic/skins/TreeFrog/load_skin.js"></script>
+</head>
+<body>
+<script>
+isc.RestDataSource.create({
+	ID:"colors",
+	dataFormat:"json",
+	dataURL:"ds-colors.php",
+	fields:[
+		{type: "sequence", name: "id", primaryKey: true},
+		{title:"Color", name:"color"},
+		{title:"HTML", name:"html"}
+	],
+	operationBindings:[
+	{operationType:"fetch", dataProtocol:"postMessage"},
+	{operationType:"add", dataProtocol:"postMessage"},
+	{operationType:"remove", dataProtocol:"postMessage"},
+	{operationType:"update", dataProtocol:"postMessage"}
+	],
+});
+
+isc.ListGrid.create({
+	dataSource: isc.DS.get("colors"),
+	autoFetchData: true,
+	fields: [
+		{name: "color"},
+		{name: "html"}
+	]
+});
+</script>
+</body>
+</html>
