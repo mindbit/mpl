@@ -17,40 +17,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 require_once 'OmRequest.php';
+require_once 'SmartClientRPCResponse.php';
 
-class RestResponse {
-	const STATUS_SUCCESS = 0;
-
-	const STATUS_FAILURE = -1;
-
-	const STATUS_VALIDATION_ERROR = -4;
-
-	const STATUS_LOGIN_INCORRECT = -5;
-
-	const STATUS_MAX_LOGIN_ATTEMPTS_EXCEEDED = -6;
-
-	const STATUS_LOGIN_REQUIRED = -7;
-
-	const STATUS_LOGIN_SUCCESS = -8;
-
-	const STATUS_TRANSPORT_ERROR = -90;
-
-	const STATUS_UNKNOWN_HOST_ERROR = -91;
-
-	const STATUS_CONNECTION_RESET_ERROR = -92;
-
-	const STATUS_SERVER_TIMEOUT = -100;
-
-	protected $status = self::STATUS_SUCCESS;
+class RestResponse extends SmartClientRPCResponse {
 
 	protected $startRow;
 	protected $endRow;
 	protected $totalRows;
 
-	protected $data = array();
+	protected $status = self::STATUS_SUCCESS;
 	protected $errors = array();
 
-	function &toArray() {
+	function toArray() {
 		$ret = array("status" => $this->status);
 		switch ($this->status) {
 		case self::STATUS_SUCCESS:
@@ -61,27 +39,17 @@ class RestResponse {
 			if (null !== $this->totalRows)
 				$ret["totalRows"] = $this->totalRows;
 			$ret["data"] =& $this->data;
-			return $ret;
+			break;
 		case self::STATUS_FAILURE:
 			$ret["data"] =& $this->data;
 		default:
 			$ret["errors"] =& $this->errors;
 		}
-		return $ret;
+		return array("response" => $ret);
 	}
 
 	function addData($data) {
 		$this->data[] = $data;
-	}
-
-	function jsonEncode() {
-		$ret = array();
-		$ret["response"] =& $this->toArray();
-		return json_encode($ret);
-	}
-
-	function xmlEncode() {
-		// TODO write this
 	}
 
 	function failure($e) {
@@ -147,7 +115,7 @@ abstract class RestRequest extends OmRequest {
 			$this->data = (array)$request["data"];
 	}
 
-	function init() {
+	protected function init() {
 		parent::init();
 		$this->response = new RestResponse();
 	}
