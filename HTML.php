@@ -29,6 +29,8 @@ class HTML {
 
 	static function attr($attr) {
 		$str = "";
+		if ($attr === null)
+			return $str;
 		foreach ($attr as $name => $value)
 			$str .= " " . $name .
 			(null === $value ? "" : '="' . self::entities($value) . '"');
