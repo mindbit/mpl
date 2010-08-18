@@ -65,7 +65,7 @@ isc.MplAuthenticator.addClassMethods({
 							params: {
 								operationType: isc.MplAuthenticator.OP_LOGIN,
 								username: credentials.username,
-								password: credentials.password,
+								password: credentials.password
 							},
 							callback: function(rpcResponse) {
 								switch (rpcResponse.data.status) {
