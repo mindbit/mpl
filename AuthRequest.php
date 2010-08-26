@@ -18,7 +18,7 @@
  */
 
 require_once "BaseRequest.php";
-require_once "Session.php";
+require_once "MplSession.php";
 
 /**
  * Generic implementation of user authentication using PHP sessions.
@@ -67,7 +67,7 @@ abstract class AuthRequest extends BaseRequest {
 	}
 
 	function dispatch() {
-		//Session::setLocale();
+		//MplSession::setLocale();
 		session_start();
 
 		$this->decode();
@@ -86,7 +86,7 @@ abstract class AuthRequest extends BaseRequest {
 
 	function doCheck() {
 		if (isset($_SESSION["user"])) {
-			Session::setUser($_SESSION["user"]);
+			MplSession::setUser($_SESSION["user"]);
 			$this->setState(self::S_AUTH_CACHED);
 			return;
 		}
@@ -104,7 +104,7 @@ abstract class AuthRequest extends BaseRequest {
 			return;
 		}
 
-		Session::setUser($user);
+		MplSession::setUser($user);
 		$_SESSION["user"] = $user;
 		$this->setState(self::S_AUTH_SUCCESS);
 	}

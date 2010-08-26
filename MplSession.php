@@ -20,7 +20,7 @@
 // require_once 'GenericUser.php';
 // require_once "Locale.php";
 
-class Session {
+class MplSession {
 	protected static $user = null;
 
 	static function setUser($user) {
