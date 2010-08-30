@@ -95,7 +95,7 @@ abstract class AbstractErrorHandler {
 			}
 			return $ret . "\n" . $indent . "}";
 		case 'object':
-			$m = get_object_vars($var);
+			$m = (array)$var;
 			if (isset($m["__varDump"]))
 				return "RECURSION (&" . $var->__varDump . ")";
 			$rec = $this->recursionId++;
@@ -104,7 +104,20 @@ abstract class AbstractErrorHandler {
 			$var->__varDump = $rec;
 			$this->cleanupObj[] =& $var;
 			for (reset($m); null !== ($k = key($m)); next($m)) {
-				$ret .= "\n" . $indent2 . $k . " => " .
+				do {
+					$visibility = "";
+					$name = $k;
+					if (strlen($k) < 3 || $k[0] != "\000")
+						break;
+					if ($k[1] == '*') {
+						$visibility = "[protected] ";
+						$name = substr($k, 3);
+						break;
+					}
+					$visibility = "[private] ";
+					$name = substr(strstr(substr($k, 1), "\000"), 1);
+				} while (false);
+				$ret .= "\n" . $indent2 . $visibility . $name . " => " .
 					$this->__varDump($m[$k], $indent2);
 			}
 			return $ret . "\n" . $indent . "}";
