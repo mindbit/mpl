@@ -91,6 +91,12 @@ abstract class OmRequest extends BaseRequest {
 			$this->err = array_merge($this->err, $this->om->getValidationFailures());
 			return;
 		}
+		// intentionally call setNew() *AFTER* setOmFields() was called, because
+		// otherwise updating a field to its default value would not work (the OM
+		// class constructor sets all fields to their default values and all
+		// setter methods check if we actually change the value)
+		if ($this->operationType == self::OPERATION_UPDATE)
+			$this->om->setNew(false);
 		$this->__doSave();
 	}
 
@@ -121,7 +127,6 @@ abstract class OmRequest extends BaseRequest {
 			$this->doFetch();
 			break;
 		case self::OPERATION_UPDATE:
-			$this->om->setNew(false);
 		case self::OPERATION_ADD:
 			$this->doSave();
 			break;
