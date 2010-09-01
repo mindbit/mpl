@@ -25,7 +25,7 @@ abstract class SmartClientAuthenticator extends RequestDispatcher {
 	 * Build an associative array of data that will be passed to the
 	 * SmartClient application.
 	 *
-	 * Typically this contans user data such as the real user's name,
+	 * Typically this contains user data such as the real user's name,
 	 * privileges, group membership, etc.
 	 */
 	function getSessionData() {
@@ -35,17 +35,17 @@ abstract class SmartClientAuthenticator extends RequestDispatcher {
 		$r = new SmartClientRPCResponse();
 
 		switch ($this->request->getState()) {
-		case AuthRequest::S_AUTH_REQUIRED:
+		case BaseAuthRequest::S_AUTH_REQUIRED:
 			$r->status = SmartClientRPCResponse::STATUS_LOGIN_REQUIRED;
 			break;
-		case AuthRequest::S_AUTH_FAILED:
+		case BaseAuthRequest::S_AUTH_FAILED:
 			$r->status = SmartClientRPCResponse::STATUS_LOGIN_INCORRECT;
 			break;
-		case AuthRequest::S_AUTH_SUCCESS:
+		case BaseAuthRequest::S_AUTH_SUCCESS:
 			$r->status = SmartClientRPCResponse::STATUS_LOGIN_SUCCESS;
 			$r->session = $this->getSessionData();
 			break;
-		case AuthRequest::S_AUTH_CACHED:
+		case BaseAuthRequest::S_AUTH_CACHED:
 			$r->status = SmartClientRPCResponse::STATUS_SUCCESS;
 			$r->session = $this->getSessionData();
 			break;

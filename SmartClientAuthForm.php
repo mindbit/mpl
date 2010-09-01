@@ -25,11 +25,11 @@ require_once "BaseForm.php";
 abstract class SmartClientAuthForm extends BaseForm {
 	function write() {
 		switch ($this->request->getState()) {
-		case AuthRequest::S_AUTH_CACHED:
+		case BaseAuthRequest::S_AUTH_CACHED:
 			// the user is already authenticated and we pass control to
 			// any subsequent RequestDispatcher
 			return;
-		case AuthRequest::S_AUTH_REQUIRED:
+		case BaseAuthRequest::S_AUTH_REQUIRED:
 			// call parent implementation to display login status code
 			// markers and trigger login processing in client RPCManager
 			parent::write();

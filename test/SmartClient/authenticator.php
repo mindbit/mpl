@@ -10,7 +10,7 @@ class ExampleAuthenticator extends SmartClientAuthenticator {
 	}
 
 	function getSessionData() {
-		$user = Session::getUser();
+		$user = MplSession::getUser();
 		return array(
 				"username" => $user->getUsername(),
 				"realName" => $user->getRealName()

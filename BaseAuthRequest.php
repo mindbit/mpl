@@ -23,7 +23,7 @@ require_once "MplSession.php";
 /**
  * Generic implementation of user authentication using PHP sessions.
  */
-abstract class AuthRequest extends BaseRequest {
+abstract class BaseAuthRequest extends BaseRequest {
 	protected $operationType;
 
 	const OP_LOGIN				= 1;
