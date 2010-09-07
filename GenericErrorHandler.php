@@ -250,6 +250,10 @@ class GenericErrorHandler extends AbstractErrorHandler {
 		// thrown from the error handling code.
 		if (self::$isHandlingError)
 			$this->handleReentrancy();
+		if (!defined('PHP_MAJOR_VERSION') || PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 3) {
+			$this->handleSingleError($this->exceptionToErrorData($exception));
+			return;
+		}
 		for ($e = $exception; $e !== null; $e = $e->getPrevious())
 			$this->handleSingleError($this->exceptionToErrorData($e));
 	}
