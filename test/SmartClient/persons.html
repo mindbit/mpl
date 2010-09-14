@@ -1,0 +1,58 @@
+<html>
+<head>
+<script>var isomorphicDir="/isomorphic/";</script>
+
+<script src="/isomorphic/system/modules/ISC_Core.js"></script>
+<script src="/isomorphic/system/modules/ISC_Foundation.js"></script>
+<script src="/isomorphic/system/modules/ISC_Containers.js"></script>
+<script src="/isomorphic/system/modules/ISC_Grids.js"></script>
+<script src="/isomorphic/system/modules/ISC_Forms.js"></script>
+<script src="/isomorphic/system/modules/ISC_DataBinding.js"></script>
+<!--
+<script src="/isomorphic/client/modules/ISC_Core.js"></script>
+<script src="/isomorphic/client/modules/ISC_Foundation.js"></script>
+<script src="/isomorphic/client/modules/ISC_Containers.js"></script>
+<script src="/isomorphic/client/modules/ISC_Grids.js"></script>
+<script src="/isomorphic/client/modules/ISC_Forms.js"></script>
+<script src="/isomorphic/client/modules/ISC_DataBinding.js"></script>
+-->
+
+<script src="/isomorphic/skins/TreeFrog/load_skin.js"></script>
+<script src="/mpl/web/js/MplDataSource.js"></script>
+</head>
+<body>
+<script>
+
+
+isc.MplDataSource.create({
+	ID:"persons",
+	dataURL:"ds-persons.php",
+	fields:[
+		{name:"person_id", type: "sequence", primaryKey: true},
+		{name:"first_name", title:"First Name"},
+		{name:"last_name", title:"Last Name"},
+		{name:"birth_date", title:"Birth Date", type:"date"}
+	]
+});
+
+var listGrid = isc.ListGrid.create({
+	dataSource: isc.DS.get("persons"),
+	autoFetchData: true,
+	canEdit: true,
+	fields: [
+		{name: "first_name"},
+		{name: "last_name"},
+		{name: "birth_date"}
+	]
+});
+
+var bNew = isc.IButton.create({
+	title: "New",
+	icon: "[SKIN]/actions/add.png",
+	showDisabledIcon: false,
+	click: "listGrid.startEditingNew()"
+});
+
+</script>
+</body>
+</html>
