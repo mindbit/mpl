@@ -29,7 +29,7 @@ isc.MplAuthenticator.addClassProperties({
 	});
 
 isc.MplAuthenticator.addClassMethods({
-	validateSession : function (validateSessionCallback) {
+	validateSession : function (validateSessionCallback, failureCallback) {
 		// first check if we already are authenticated
 		isc.RPCManager.sendRequest({
 			containsCredentials: true,
@@ -77,10 +77,19 @@ isc.MplAuthenticator.addClassMethods({
 								case isc.RPCResponse.STATUS_LOGIN_INCORRECT:
 									dialogCallback(false);
 									break;
+								case isc.RPCResponse.STATUS_FAILURE:
+									dialogCallback(true);
+									if (failureCallback)
+										failureCallback(rpcResponse.data);
+									break;
 								}
 							}
 						});
 					});
+					break;
+				case isc.RPCResponse.STATUS_FAILURE:
+					if (failureCallback)
+						failureCallback(rpcResponse.data);
 					break;
 				}
 			}

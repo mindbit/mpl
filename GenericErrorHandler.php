@@ -223,7 +223,7 @@ class GenericErrorHandler extends AbstractErrorHandler {
 
 	function handleSingleError($data) {
 		$data["textCode"] = $this->errorCodeToStr($data["code"]) . " (" . $data["code"] . ")";
-		$data["renderedBacktrace"] = $this->renderBacktrace($data["backtrace"]);
+		$data["renderedBacktrace"] = $this->renderBacktrace(isset($data["backtrace"]) ? $data["backtrace"] : null);
 		$data["dumpedContext"] = $this->varDump($data["context"]);
 		$this->removeGlobals($data["context"]);
 
