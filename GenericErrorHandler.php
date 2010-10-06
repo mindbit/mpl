@@ -38,7 +38,8 @@ class GenericErrorHandler extends AbstractErrorHandler {
 	protected $initialObLevel;
 
 	function __construct() {
-		$this->display = $_SERVER['SERVER_NAME'] ?
+		$this->display =
+			isset($_SERVER['SERVER_NAME']) && $_SERVER['SERVER_NAME'] ?
 			self::DISPLAY_HTML : self::DISPLAY_TEXT;
 	}
 

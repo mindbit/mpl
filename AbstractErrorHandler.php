@@ -24,11 +24,6 @@
  * exceptiilor
  */
 abstract class AbstractErrorHandler {
-	/**
-	 * Masca de erori
-	 */
-	protected $mask;
-
 	protected static $isHandlingError = false;
 	protected static $isHandlingException = false;
 
@@ -53,12 +48,6 @@ abstract class AbstractErrorHandler {
 		}
 	}
 	
-	function setMask($mask) {
-		$oldMask = $this->mask;
-		$this->mask = $mask;
-		return $oldMask;
-	}
-
 	function varDump(&$var) {
 		$this->cleanupArray = array();
 		$this->cleanupObj = array();
@@ -168,8 +157,14 @@ abstract class AbstractErrorHandler {
 	 * error mask, so descendant classes shouldn't override this.
 	 */
 	final function handleError($code, $desc, $filename, $line, &$context) {
-		if ($this->mask & $code)
+		// For all the errors except php internal errors, if a
+		// custom error handler is installed it will be
+		// triggered regardless of the error_reporting() value. See
+		// http://ro.php.net/manual/en/function.error-reporting.php#8866
+		// for details.
+		if (!($code & error_reporting()))
 			return;
+
 		if (self::$isHandlingError)
 			$this->handleReentrancy();
 		self::$isHandlingError = true;

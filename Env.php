@@ -35,14 +35,6 @@ class Env {
 	}
 
 	static function setup() {
-		// Leave active only php internal errors (which are not passed
-		// to user-defined error handlers). For all other errors, if a
-		// custom error handler is installed (like here), it will be
-		// triggered regardless of the error_reporting() value. See
-		// http://ro.php.net/manual/en/function.error-reporting.php#8866
-		// for details.
-		error_reporting(E_PHPINTERNAL);
-
 		ErrorHandler::setHandler(new GenericErrorHandler());
 		ErrorHandler::setMask(Env::get("MPL_ERROR_MASK", E_NONE));
 
