@@ -23,9 +23,10 @@ Mercury Research SRL.
 %install
 rm -rf $RPM_BUILD_ROOT
 
-for i in *.php; do
-	install -m 644 -D $i ${RPM_BUILD_ROOT}%{_datadir}/mpl/$i
-done
+find \
+	*.php \
+	web \
+	-type f -exec install -m 644 -D \{\} ${RPM_BUILD_ROOT}%{_datadir}/mpl/\{\} \;
 
 %clean
 rm -rf $RPM_BUILD_ROOT
