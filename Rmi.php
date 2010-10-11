@@ -181,6 +181,8 @@ abstract class RmiClient extends RmiConnector {
 	function dispatch($request) {
 		$request->write($this->streamOut);
 		$response = RmiMessage::read($this->streamIn);
+		if ($response === null)
+			throw new Exception("Unexpected end of stream");
 		assert(is_a($response, "RmiResponse"));
 		if (is_a($response, "RmiExceptionResponse"))
 			$this->handleRemoteException($response->getException());
