@@ -1,5 +1,5 @@
 <?
-require_once "AbstractErrorHandler.php";
+require_once "ThrowErrorHandler.php";
 
 class RmiMessageHeader {
 	protected $version = 1;
@@ -354,11 +354,7 @@ class RmiStub {
 	}
 }
 
-class RmiServerErrorHandler extends AbstractErrorHandler {
-	protected function __handleError($data) {
-		throw new ErrorException($data["description"], $data["code"], 0, $data["filename"], $data["line"]);
-	}
-
+class RmiServerErrorHandler extends ThrowErrorHandler {
 	protected function __handleException($exception) {
 		// For unknown reasons, we have an uncaught exception (it
 		// probably happened outside the real-object call code).

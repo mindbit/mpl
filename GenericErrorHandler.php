@@ -29,18 +29,18 @@ define("STR_ALIGN_CENTER",		STR_PAD_BOTH);
 define("STR_ALIGN_RIGHT",		STR_PAD_LEFT);
 
 class GenericErrorHandler extends AbstractErrorHandler {
-	const DISPLAY_NONE = 0;
-	const DISPLAY_HTML = 1;
-	const DISPLAY_TEXT = 2;
+	const DISPLAY_FORMAT_NONE = 0;
+	const DISPLAY_FORMAT_HTML = 1;
+	const DISPLAY_FORMAT_TEXT = 2;
 
-	protected $display = self::DISPLAY_NONE;
+	protected $displayFormat = self::DISPLAY_FORMAT_NONE;
 	protected $outputBuffering = false;
 	protected $initialObLevel;
 
 	function __construct() {
-		$this->display =
+		$this->displayFormat =
 			isset($_SERVER['SERVER_NAME']) && $_SERVER['SERVER_NAME'] ?
-			self::DISPLAY_HTML : self::DISPLAY_TEXT;
+			self::DISPLAY_FORMAT_HTML : self::DISPLAY_FORMAT_TEXT;
 	}
 
 	function onActivate() {
@@ -90,8 +90,8 @@ class GenericErrorHandler extends AbstractErrorHandler {
 	}
 
 	function displayErrorHeader() {
-		switch ($this->display) {
-		case self::DISPLAY_HTML:
+		switch ($this->displayFormat) {
+		case self::DISPLAY_FORMAT_HTML:
 			?>
 			<center>
 			<table border="1" cellspacing="1">
@@ -100,7 +100,7 @@ class GenericErrorHandler extends AbstractErrorHandler {
 			</tr>
 			<?
 			break;
-		case self::DISPLAY_TEXT:
+		case self::DISPLAY_FORMAT_TEXT:
 			echo AsciiTable::renderRowSeparator(array(EXC_TABLE_WIDTH + 3));
 			echo AsciiTable::renderCells(
 					array('ERROR'), array(EXC_TABLE_WIDTH + 3),
@@ -112,8 +112,8 @@ class GenericErrorHandler extends AbstractErrorHandler {
 	}
 
 	function displayErrorBody($data) {
-		switch ($this->display) {
-		case self::DISPLAY_HTML:
+		switch ($this->displayFormat) {
+		case self::DISPLAY_FORMAT_HTML:
 			?>
 			<tr>
 				<td bgcolor="white"><b>Error code</b></td>
@@ -141,7 +141,7 @@ class GenericErrorHandler extends AbstractErrorHandler {
 			</tr>
 			<?
 			break;
-		case self::DISPLAY_TEXT:
+		case self::DISPLAY_FORMAT_TEXT:
 			echo AsciiTable::renderCells(
 					array("Error code", $data["textCode"]),
 					array(EXC_LEFT_WIDTH, EXC_RIGHT_WIDTH));
@@ -177,8 +177,8 @@ class GenericErrorHandler extends AbstractErrorHandler {
 	}
 
 	function displayErrorFooter() {
-		switch ($this->display) {
-		case self::DISPLAY_HTML:
+		switch ($this->displayFormat) {
+		case self::DISPLAY_FORMAT_HTML:
 			?>
 			</center>
 			</table>
@@ -241,12 +241,12 @@ class GenericErrorHandler extends AbstractErrorHandler {
 		$this->displayErrorFooter();
 	}
 
-	function __handleError($data) {
+	protected function __handleError($data) {
 		$this->handleSingleError($data);
 		exit;
 	}
 
-	function __handleException($exception) {
+	protected function __handleException($exception) {
 		// Protect against an uncaught exception that was implicitly
 		// thrown from the error handling code.
 		if (self::$isHandlingError)
