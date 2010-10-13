@@ -20,6 +20,27 @@ class RmiMessageHeader {
 abstract class RmiMessage {
 	abstract function serialize();
 
+	/**
+	 * Safely unserialize php variables.
+	 */
+	static function safeUnserialize($str) {
+		$oldIni = ini_get('unserialize_callback_func');
+		ini_set('unserialize_callback_func', '');
+		$errorHandler = ErrorHandler::getHandler();
+		ErrorHandler::setHandler(new ThrowErrorHandler());
+		$e = null;
+		try {
+			$ret = unserialize($str);
+		} catch (Exception $_e) {
+			$e = $_e;
+		}
+		ErrorHandler::setHandler($errorHandler);
+		ini_set('unserialize_callback_func', $oldIni);
+		if ($e !== null)
+			throw $e;
+		return $ret;
+	}
+
 	static function read($stream) {
 		// even an empty RmiMessage object would be serialized as
 		// "O:10:"RmiMessage":0:{}" (20 characters) so reading in chunks
@@ -66,7 +87,7 @@ abstract class RmiMessage {
 				throw new Exception("read failed");
 			$buf .= $chunk;
 		}
-		$ret = unserialize($buf);
+		$ret = self::safeUnserialize($buf);
 		if (!is_a($ret, "RmiMessage"))
 			throw new Exception("oops! we fished an alien");
 		return $ret;
