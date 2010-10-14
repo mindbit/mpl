@@ -211,7 +211,7 @@ abstract class RmiClient extends RmiConnector {
 	}
 
 	function handleRemoteException($e) {
-		throw new Exception("Exception on RMI server side", 0, $e);
+		throw new Exception("Exception on RMI server side:\n\n" . $e);
 	}
 }
 
