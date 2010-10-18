@@ -40,14 +40,18 @@ class SmartClientRPCResponse {
 
 	const STATUS_SERVER_TIMEOUT = -100;
 
-	protected $data = array();
+	protected $_data = array("status" => self::STATUS_SUCCESS);
 
 	function setStatus($status) {
-		$this->status = $status;
+		$this->_data["status"] = $status;
+	}
+
+	function getStatus() {
+		return $this->_data["status"];
 	}
 
 	function toArray() {
-		return $this->data;
+		return $this->_data;
 	}
 
 	function jsonEncode() {
@@ -59,19 +63,24 @@ class SmartClientRPCResponse {
 	}
 
 	function __set($name, $value) {
-		$this->data[$name] = $value;
+		$this->_data[$name] = $value;
 	}
 
 	function __get($name) {
 		// isset() is fastest because it uses hashing
-		if (isset($this->data[$name]))
-			return $this->data[$name];
+		if (isset($this->_data[$name]))
+			return $this->_data[$name];
 
 		// isset() does not cover null values
-		if (array_key_exists($name, $this->data))
-			return $this->data[$name];
+		if (array_key_exists($name, $this->_data))
+			return $this->_data[$name];
 
 		throw new Exception("Undefined property " . $name);
+	}
+
+	function setFailure($msg) {
+		$this->setStatus(self::STATUS_FAILURE);
+		$this->_data["data"] = $msg;
 	}
 }
 ?>

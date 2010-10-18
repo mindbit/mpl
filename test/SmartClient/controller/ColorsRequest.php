@@ -35,7 +35,7 @@ class ColorsRequest extends RestRequest {
 
 	function doFetch() {
 		foreach ($this->staticData as $obj)
-			$this->response->addData($obj);
+			$this->response->addRow($obj);
 	}
 }
 ?>

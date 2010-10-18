@@ -29,7 +29,13 @@ isc.MplAuthenticator.addClassProperties({
 	});
 
 isc.MplAuthenticator.addClassMethods({
-	validateSession : function (validateSessionCallback, failureCallback) {
+	failureCallback : function (rpcResponse) {
+		isc.RPCManager.handleError(rpcResponse.data, null);
+	},
+
+	validateSession : function (validateSessionCallback) {
+		var mplAuthenticatorInstance = this;
+
 		// first check if we already are authenticated
 		isc.RPCManager.sendRequest({
 			containsCredentials: true,
@@ -79,8 +85,7 @@ isc.MplAuthenticator.addClassMethods({
 									break;
 								case isc.RPCResponse.STATUS_FAILURE:
 									dialogCallback(true);
-									if (failureCallback)
-										failureCallback(rpcResponse.data);
+									mplAuthenticatorInstance.failureCallback(rpcResponse);
 									break;
 								}
 							}
@@ -88,8 +93,7 @@ isc.MplAuthenticator.addClassMethods({
 					});
 					break;
 				case isc.RPCResponse.STATUS_FAILURE:
-					if (failureCallback)
-						failureCallback(rpcResponse.data);
+					mplAuthenticatorInstance.failureCallback(rpcResponse);
 					break;
 				}
 			}

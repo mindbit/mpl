@@ -211,7 +211,7 @@ abstract class RmiClient extends RmiConnector {
 	}
 
 	function handleRemoteException($e) {
-		throw new Exception("Exception on RMI server side:\n\n" . $e);
+		throw new RemoteException($e);
 	}
 }
 
@@ -372,6 +372,12 @@ class RmiStub {
 
 	function __call($name, $arguments) {
 		return $this->__rmiClient->callMethod($this, $name, $arguments);
+	}
+}
+
+class RemoteException extends Exception {
+	function __construct($e) {
+		parent::__construct("Exception in RMI server", 0, $e);
 	}
 }
 

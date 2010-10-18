@@ -17,44 +17,21 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 require_once 'OmRequest.php';
+require_once 'Rmi.php';
 require_once 'SmartClientRPCResponse.php';
 
 class RestResponse extends SmartClientRPCResponse {
-
-	protected $startRow;
-	protected $endRow;
-	protected $totalRows;
-
-	protected $status = self::STATUS_SUCCESS;
-	protected $errors = array();
+	protected $rows = array();
 
 	function toArray() {
-		$ret = array("status" => $this->status);
-		switch ($this->status) {
-		case self::STATUS_SUCCESS:
-			if (null !== $this->startRow)
-				$ret["startRow"] = $this->startRow;
-			if (null !== $this->endRow)
-				$ret["endRow"] = $this->endRow;
-			if (null !== $this->totalRows)
-				$ret["totalRows"] = $this->totalRows;
-			$ret["data"] =& $this->data;
-			break;
-		case self::STATUS_FAILURE:
-			$ret["data"] =& $this->data;
-		default:
-			$ret["errors"] =& $this->errors;
-		}
+		$ret = parent::toArray();
+		if ($this->getStatus() == self::STATUS_SUCCESS)
+			$ret["data"] = $this->rows;
 		return array("response" => $ret);
 	}
 
-	function addData($data) {
-		$this->data[] = $data;
-	}
-
-	function failure($e) {
-		$this->status = self::STATUS_FAILURE;
-		$this->data = $e->getMessage();
+	function addRow($row) {
+		$this->rows[] = $row;
 	}
 }
 
@@ -169,19 +146,21 @@ abstract class RestRequest extends OmRequest {
 	function doFetch() {
 		$objs = $this->omPeer->doSelect($this->buildFetchCriteria());
 		foreach ($objs as $obj)
-			$this->response->addData($this->omToArray($obj));
+			$this->response->addRow($this->omToArray($obj));
 	}
 
 	function doSave() {
 		parent::doSave();
-		$this->response->addData($this->omToArray($this->om));
+		$this->response->addRow($this->omToArray($this->om));
 	}
 
 	function dispatch() {
 		try {
 			parent::dispatch();
+		} catch (RemoteException $e) {
+			$this->response->setFailure($e->getMessage() . ": " . $e->getPrevious()->getMessage());
 		} catch (Exception $e) {
-			$this->response->failure($e);
+			$this->response->setFailure($e->getMessage());
 		}
 	}
 
