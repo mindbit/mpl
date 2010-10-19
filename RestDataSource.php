@@ -19,6 +19,7 @@
 require_once 'OmRequest.php';
 require_once 'Rmi.php';
 require_once 'SmartClientRPCResponse.php';
+require_once 'Version.php';
 
 class RestResponse extends SmartClientRPCResponse {
 	protected $rows = array();
@@ -158,7 +159,10 @@ abstract class RestRequest extends OmRequest {
 		try {
 			parent::dispatch();
 		} catch (RemoteException $e) {
-			$this->response->setFailure($e->getMessage() . ": " . $e->getPrevious()->getMessage());
+			if (PHP_VERSION_ID < 50300)
+				$this->response->setFailure($e->getMessage());
+			else
+				$this->response->setFailure($e->getMessage() . ": " . $e->getPrevious()->getMessage());
 		} catch (Exception $e) {
 			$this->response->setFailure($e->getMessage());
 		}

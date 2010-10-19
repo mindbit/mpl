@@ -17,8 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-require_once('AbstractErrorHandler.php');
-require_once('AsciiTable.php');
+require_once 'AbstractErrorHandler.php';
+require_once 'AsciiTable.php';
+require_once 'Version.php';
 
 define("EXC_TABLE_WIDTH",    72);
 define("EXC_LEFT_WIDTH",     25);
@@ -251,7 +252,7 @@ class GenericErrorHandler extends AbstractErrorHandler {
 		// thrown from the error handling code.
 		if (self::$isHandlingError)
 			$this->handleReentrancy();
-		if (!defined('PHP_MAJOR_VERSION') || PHP_MAJOR_VERSION == 5 && PHP_MINOR_VERSION < 3) {
+		if (PHP_VERSION_ID < 50300) {
 			$this->handleSingleError($this->exceptionToErrorData($exception));
 			return;
 		}
