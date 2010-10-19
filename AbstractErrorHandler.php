@@ -18,18 +18,14 @@
  */
 
 /**
- * Clasa de pornire pentru handleri de exceptii
- *
- * Clasa implementeaza functionalitatea de baza pentru tratarea
- * exceptiilor
+ * Base class for custom error handlers.
  */
 abstract class AbstractErrorHandler {
 	protected static $isHandlingError = false;
 	protected static $isHandlingException = false;
 
 	/**
-	 * Translatia constantelor (numerice) reprezentand erori in
-	 * sirurile corespunzatoare
+	 * Translate php error constants to (string) names.
 	 */
 	function errorCodeToStr($code) {
 		switch ($code) {
@@ -120,8 +116,8 @@ abstract class AbstractErrorHandler {
 	}
 	
 	/**
-	 * Parcurge o matrice si inlocuieste referintele spre
-	 * contextul global de variabile cu sirul "__GLOBALS__"
+	 * In-depth scan of an array that replaces references to the
+	 * global variable context with the "__GLOBALS__" string.
 	 */
 	function __removeGlobals(&$a) {
 		//FIXME: ar trebui sa parcurg si membrii obiectelor
@@ -273,21 +269,6 @@ abstract class AbstractErrorHandler {
 	}
 
 	/**
-	 * Inregistreaza o functie de recovery pentru un tip de exceptie
-	 *
-	 * Daca se inregistreaza o astfel de functie, atunci ea va fi
-	 * apelata la aparitia unei exceptii (invocare de ::raise()) in
-	 * loc sa fie apelat handlerul implicit de erori.
-	 *
-	 * Daca se inregistreaza o functie de recovery pentru o clasa ea
-	 * va fi implicit invocata si pentru clasele derivate (daca nu se
-	 * inregistreaza explicit alte functii de recovery pentru ele).
-	function registerRecoveryFunction($exception, $recovery) {
-		$this->recovery[strtolower($exception)] = $recovery;
-	}
-	 */
-
-	/**
 	 * Apeleaza debug_backtrace() si normalizeaza rezultatul.
 	 *
 	 * In stiva de apel intoarsa de debug_backtrace() sunt decalate
@@ -398,112 +379,6 @@ abstract class AbstractErrorHandler {
 	function onDeactivate() {
 	}
 }
-
-/*
-class lEXC_Exception {
-	/**
-	 * @static
-	 * @param lEXC_ExceptionHandler $obj
-	 * /
-
-	/**
-	 * @static
-	 * /
-	function raise($desc, $context = null) {
-		$GLOBALS["lEXC_Handler"]->raise($desc, $context);
-	}
-
-	/**
-	 * @static
-	 * /
-	function registerRecoveryFunction($exception, $recovery) {
-		$GLOBALS["lEXC_Handler"]->registerRecoveryFunction($exception, $recovery);
-	}
-
-	function handler($code, $desc, $filename = null,
-			$line = null, $context = null) {
-		$GLOBALS["lEXC_Handler"]->handler($code, $desc, $filename, $line, $context);
-	}
-
-	function assert($cond, $context = null) {
-		if (is_string($cond) ? eval($cond) : $cond)
-			return;
-		$bt = debug_backtrace();
-		lEXC_Exception::handler(
-				E_USER_WARNING,
-				"Assertion failed" . (is_string($cond) ? ": " . $cond : ""),
-				$bt[0]["file"],
-				$bt[0]["line"],
-				$context
-				);
-	}
-}
-
-class lEXC_Error {
-    var $code;
-
-    function lEXC_Error($code) {
-        $this->code = $code;
-    }
-
-    function getCode() {
-        return $this->code;
-    }
-}
-
-function lEXC_isError(&$obj) {
-    return is_object($obj) && is_a($obj, 'lexc_error');
-}
-
-function lEXC_assertHandler($file, $line, $message) {
-	lEXC_Exception::handler(
-			E_USER_WARNING,
-			"Assertion failed" . (empty($message) ? "" : ": " . $message),
-			$file,
-			$line
-			);
-}
-
-define('lEXC_Text',		1);
-define('lEXC_HTML',		2);
-*/
-
-/**
- * Constanta folosita pentru a defini comportamentul unei metode
- * in cazul aparitiei unei erori.
- *
- * Comportamentul se stabileste printr-un argument cu valoare
- * implicita, pozitionat de preferinta la sfarsitul listei de argumente.
- *
- * Valorile de adevar sunt folosite in asa fel incat sa se poata folosi
- * chiar numele $raise pentru argument si sa aiba sens o constructie de
- * genul:
- *
- * if($raise)
- *     $GLOBALS['lEXC_Handler']->raise(...);
- *
- * Cateva observatii cu privire la design pattern-un raise/silent: atunci
- * cand o metoda raise/silent doreste sa propage caracterul raise/silent
- * la alte metode care folosesc accest pattern, are sens un cod de genul:
- *
- * if(($err = apel_metoda(..., $raise)) < 0)
- *     return $err;
- *
- * Este de notat ca nu se pierde nici un caz. Daca $raise este true si
- * apare o eroare in metoda apelata, atunci se va arunca acolo o exceptie.
- * Ramura cu return se va executa doar daca apare o eroare in metoda
- * apelata si $raise este false. In acest caz codul de eroare va fi propagat
- * mai sus. Pentru aceasta este esential sa nu apara suprapuneri de coduri
- * de eroare, astfel incat sa se poata detecta exact eroarea aparuta in
- * cazul apelurilor extra-modul.
- *
- * Codurile de eroare ale fiecarui modul trebuie definite adunand un numar
- * intre 0 si 0xffff la o constanta de erori specifica modulului (un numar
- * negativ, multiplu de 0x10000). In acest fel se evita suprapunerea
- * codurilor de eroare.
-define('EXC_RAISE',		true);
-define('EXC_SILENT',	false);
- */
 
 /**
  * Constanta defineste toate erorile care nu pot fi tratate cu o functie
