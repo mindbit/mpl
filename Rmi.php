@@ -78,7 +78,7 @@ abstract class RmiMessage {
 		$pos += $_pos;
 		$hdr = unserialize(substr($buf, 0, ++$pos));
 		$buf = substr($buf, $pos);
-		if (!is_a($hdr, "RmiMessageHeader"))
+		if (!($hdr instanceof RmiMessageHeader))
 			throw new Exception("oops! we fished an alien");
 		$dataLength = $hdr->getDataLength();
 		while (($need = $dataLength - strlen($buf)) > 0) {
@@ -88,7 +88,7 @@ abstract class RmiMessage {
 			$buf .= $chunk;
 		}
 		$ret = self::safeUnserialize($buf);
-		if (!is_a($ret, "RmiMessage"))
+		if (!($ret instanceof RmiMessage))
 			throw new Exception("oops! we fished an alien");
 		return $ret;
 	}
@@ -186,7 +186,7 @@ abstract class RmiClient extends RmiConnector {
 		$args = func_get_args();
 		array_shift($args);
 		$msg = $this->dispatch(new RmiNewInstanceRequest($class, $args));
-		assert(is_a($msg, "RmiNewInstanceResponse"));
+		assert($msg instanceof RmiNewInstanceResponse);
 		$instance = new RmiStub();
 		$instance->setRmiId($msg->getRmiId());
 		$instance->setRmiClient($this);
@@ -195,7 +195,7 @@ abstract class RmiClient extends RmiConnector {
 
 	function callMethod($object, $method, $args) {
 		$msg = $this->dispatch(new RmiCallMethodRequest($object->getRmiId(), $method, $args));
-		assert(is_a($msg, "RmiCallMethodResponse"));
+		assert($msg instanceof RmiCallMethodResponse);
 		return $msg->getRetVal();
 	}
 
@@ -204,8 +204,8 @@ abstract class RmiClient extends RmiConnector {
 		$response = RmiMessage::read($this->streamIn);
 		if ($response === null)
 			throw new Exception("Unexpected end of stream");
-		assert(is_a($response, "RmiResponse"));
-		if (is_a($response, "RmiExceptionResponse"))
+		assert($response instanceof RmiResponse);
+		if ($response instanceof RmiExceptionResponse)
 			$this->handleRemoteException($response->getException());
 		return $response;
 	}
@@ -265,7 +265,7 @@ abstract class RmiServer extends RmiConnector {
 			$msg = RmiMessage::read($this->streamIn);
 			if ($msg === null)
 				break;
-			assert(is_a($msg, "RmiRequest"));
+			assert($msg instanceof RmiRequest);
 			$response = $msg->process();
 			if ($response !== null)
 				$response->write($this->streamOut);
