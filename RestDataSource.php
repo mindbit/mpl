@@ -158,11 +158,6 @@ abstract class RestRequest extends OmRequest {
 	function dispatch() {
 		try {
 			parent::dispatch();
-		} catch (RemoteException $e) {
-			if (PHP_VERSION_ID < 50300)
-				$this->response->setFailure($e->getMessage());
-			else
-				$this->response->setFailure($e->getMessage() . ": " . $e->getPrevious()->getMessage());
 		} catch (Exception $e) {
 			$this->response->setFailure($e->getMessage());
 		}
