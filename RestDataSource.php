@@ -166,6 +166,21 @@ abstract class RestRequest extends OmRequest {
 	function getResponse() {
 		return $this->response;
 	}
+
+	function getJsonResponse() {
+		try {
+			return $this->getResponse()->jsonEncode();
+		} catch (Exception $e) {
+			/* If we catch an exception here, probably we failed to jsonEncode()
+			   the original response. Therefore, we create a new response object
+			   in which we encode the exception message. This new response object
+			   should not fail at json encoding.
+			 */
+			$response = new RestResponse();
+			$response->setFailure($e->getMessage());
+			return $response->jsonEncode();
+		}
+	}
 }
 
 ?>
