@@ -56,8 +56,24 @@ abstract class OmRequest extends BaseRequest {
 	protected function omToArray($om) {
 		$ret = array();
 		$om = (array)$om;
+		$tableMap = $this->omPeer->getTableMap();
 		foreach ($this->omFieldNames as $field) {
 			$val = $om[PropelUtil::PROTECTED_MAGIC . $field];
+			$column = $tableMap->getColumn($field);
+			/* Blob columns are read by propel into a memory buffer and
+			   are returned to the user as a resource of type stream.
+			   Since those cannot be json encoded, and we need that in
+			   all our SmartClient applications, we need to read the
+			   buffer contents into a string.
+			 */
+			if (is_resource($val) && $column->isLob()) {
+				$str_val = "";
+				while ($line = fgets($val)) {
+					$str_val .= $line;
+				}
+				$val = $str_val;
+
+			}
 			$ret[$field] = $val === NULL? "" : $val;
 		}
 		return $ret;
