@@ -42,6 +42,7 @@ abstract class OmRequest extends BaseRequest {
 		$this->omPeer = $this->om->getPeer();
 		$this->omFieldNames = $this->omPeer->getFieldNames(BasePeer::TYPE_FIELDNAME);
 		$this->err = array();
+		$this->data = array();
 	}
 
 	protected function setOmFields($data) {
