@@ -30,8 +30,7 @@ class Env {
 		assert_options(ASSERT_WARNING, 0);
 		assert_options(ASSERT_BAIL, 0);
 		assert_options(ASSERT_QUIET_EVAL, 0);
-		assert_options(ASSERT_CALLBACK, 'lEXC_assertHandler');
-		// FIXME handlerul trebuie sa fie apel static catre o metoda din ErrorHandler
+		assert_options(ASSERT_CALLBACK, array("ErrorHandler", "handleAssert"));
 	}
 
 	static function setup() {
