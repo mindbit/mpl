@@ -21,6 +21,8 @@ require_once("ErrorHandler.php");
 require_once("GenericErrorHandler.php");
 
 class Env {
+	static $logger;
+
 	static function get($constant, $default = null) {
 		return defined($constant) ? constant($constant) : $default;
 	}
@@ -41,6 +43,16 @@ class Env {
 		set_error_handler(array("ErrorHandler", "handleError"));
 		set_exception_handler(array("ErrorHandler", "handleException"));
 		// Env::setAssertOptions();
+	}
+
+	static function setLogger($logger) {
+		self::$logger = $logger;
+	}
+
+	static function log($message, $priority = null) {
+		if (self::$logger === null)
+			return;
+		self::$logger->log($message, $priority);
 	}
 }
 

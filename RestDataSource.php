@@ -159,6 +159,7 @@ abstract class RestRequest extends OmRequest {
 		try {
 			parent::dispatch();
 		} catch (Exception $e) {
+			$this->handleException($e);
 			$this->response->setFailure($e->getMessage());
 		}
 	}
@@ -171,6 +172,7 @@ abstract class RestRequest extends OmRequest {
 		try {
 			return $this->getResponse()->jsonEncode();
 		} catch (Exception $e) {
+			$this->handleException($e);
 			/* If we catch an exception here, probably we failed to jsonEncode()
 			   the original response. Therefore, we create a new response object
 			   in which we encode the exception message. This new response object
@@ -180,6 +182,9 @@ abstract class RestRequest extends OmRequest {
 			$response->setFailure($e->getMessage());
 			return $response->jsonEncode();
 		}
+	}
+
+	function handleException($e) {
 	}
 }
 
