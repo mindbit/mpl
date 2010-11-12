@@ -1,7 +1,7 @@
 Summary:        Mindbit PHP Libraries
 Name:           mpl
-Version:        0.2
-Release:        1
+Version:        0.3
+Release:        1%{dist}
 License:        LGPL
 BuildArch:		noarch
 Packager:       Radu Rendec
@@ -12,8 +12,8 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-root
 Requires:		php php-mysql php-ldap mpl
 
 %description
-Aplicatie pentru vizualizarea si exportarea raportarilor realizate de
-Mercury Research SRL.
+PHP libraries that provide a safe application environment and facilitate
+integration with several frameworks such as Propel and SmartClient.
 
 %prep
 %setup -q -n %{name}
