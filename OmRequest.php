@@ -66,14 +66,8 @@ abstract class OmRequest extends BaseRequest {
 			   all our SmartClient applications, we need to read the
 			   buffer contents into a string.
 			 */
-			if (is_resource($val) && $column->isLob()) {
-				$str_val = "";
-				while ($line = fgets($val)) {
-					$str_val .= $line;
-				}
-				$val = $str_val;
-
-			}
+			if (is_resource($val) && $column->isLob())
+				$val = stream_get_contents($val);
 			$ret[$field] = $val === NULL? "" : $val;
 		}
 		return $ret;
