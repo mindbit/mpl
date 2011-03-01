@@ -219,7 +219,22 @@ class GenericErrorHandler extends AbstractErrorHandler {
 		$this->log("===================================================================");
 	}
 
+	function logException($e) {
+		$this->log("============================ EXCEPTION ============================");
+		do {
+			$msgs = explode("\n", $e->__toString());
+			foreach ($msgs as $msg)
+				$this->log("== " . $msg);
+			if (PHP_VERSION_ID < 50300)
+				break;
+			//$this->log("============================ caused by ============================");
+			$e = $e->getPrevious();
+		} while ($e !== null);
+		$this->log("===================================================================");
+	}
+
 	function log($message) {
+		Env::log($message);
 	}
 
 	function handleSingleError($data) {

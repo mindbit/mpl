@@ -50,6 +50,10 @@ class ErrorHandler {
 		return self::$handlerInstance->handleException($exception);
 	}
 
+	static function logException($exception) {
+		self::$handlerInstance->logException($exception);
+	}
+
 	static function handleAssert($file, $line, $message) {
 		return self::$handlerInstance->handleAssert($file, $line, $message);
 	}
