@@ -1,7 +1,7 @@
 Summary:        Mindbit PHP Libraries
 Name:           mpl
 Version:        0.3
-Release:        1%{dist}
+Release:        2%{dist}
 License:        LGPL
 BuildArch:		noarch
 Packager:       Radu Rendec
