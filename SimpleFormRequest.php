@@ -25,6 +25,8 @@ abstract class SimpleFormRequest extends OmRequest {
 	const STATE_ADD = 1;
 	const STATE_UPDATE = 2;
 
+	protected $prefixDataMapping = array();
+
 	/**
 	 * Return an array that maps request field names to OM field names.
 	 *
@@ -33,6 +35,16 @@ abstract class SimpleFormRequest extends OmRequest {
 	 */
 	protected function getRequestDataMapping() {
 		return array();
+	}
+
+	protected function prefixRequestDataMapping($prefix) {
+		if (isset($this->prefixDataMapping[$prefix]))
+			return $this->prefixDataMapping[$prefix];
+		$map = array();
+		foreach ($this->omFieldNames as $omField)
+			$map[$omField] = $prefix . $omField;
+		$this->prefixDataMapping[$prefix] = $map;
+		return $map;
 	}
 
 	protected function getRequestData() {
