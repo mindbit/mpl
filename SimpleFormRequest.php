@@ -25,13 +25,31 @@ abstract class SimpleFormRequest extends OmRequest {
 	const STATE_ADD = 1;
 	const STATE_UPDATE = 2;
 
-	protected function decode() {
-		$this->data = array();
+	/**
+	 * Return an array that maps request field names to OM field names.
+	 *
+	 * Keys are the OM field names and values are the corresponding
+	 * request field names.
+	 */
+	protected function getRequestDataMapping() {
+		return array();
+	}
 
-		foreach ($this->omFieldNames as $field) {
-			if (isset($_REQUEST[$field]))
-				$this->data[$field] = $_REQUEST[$field];
+	protected function getRequestData() {
+		$data = array();
+		$map = $this->getRequestDataMapping();
+
+		foreach ($this->omFieldNames as $omField) {
+			$reqField = isset($map[$omField]) ? $map[$omField] : $omField;
+			if (isset($_REQUEST[$reqField]))
+				$data[$omField] = $_REQUEST[$reqField];
 		}
+
+		return $data;
+	}
+
+	protected function decode() {
+		$this->data = $this->getRequestData();
 
 		if (isset($_REQUEST['__id'])) {
 			$this->operationType = self::OPERATION_FETCH;
