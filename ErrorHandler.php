@@ -25,9 +25,11 @@ class ErrorHandler {
 	static function setHandler(AbstractErrorHandler $obj) {
 		if (self::$handlerInstance !== null)
 			self::$handlerInstance->onDeactivate();
+		$ret = self::$handlerInstance;
 		self::$handlerInstance = $obj;
 		if (null !== $obj)
 			$obj->onActivate();
+		return $ret;
 	}
 
 	static function getHandler() {
