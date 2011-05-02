@@ -164,14 +164,25 @@ abstract class AbstractErrorHandler {
 		if (self::$isHandlingError)
 			$this->handleReentrancy();
 		self::$isHandlingError = true;
-		$this->__handleError(array(
-					"code"			=> $code,
-					"description"	=> $desc,
-					"filename"		=> $filename,
-					"line"			=> $line,
-					"context"		=> $context
-					));
+		// Make sure we do our cleanup if __handleError throws an exception
+		// (this is always the case for ThrowErrorHandler). Otherwise, we
+		// may get false-positives about re-entrancy, even if the exception
+		// is caught properly in the user code.
+		$exception = null;
+		try {
+			$this->__handleError(array(
+						"code"			=> $code,
+						"description"	=> $desc,
+						"filename"		=> $filename,
+						"line"			=> $line,
+						"context"		=> $context
+						));
+		} catch (Exception $__e) {
+			$exception = $__e;
+		}
 		self::$isHandlingError = false;
+		if ($exception !== null)
+			throw $exception;
 	}
 	
 	/**
