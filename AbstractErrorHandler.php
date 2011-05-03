@@ -25,6 +25,21 @@ abstract class AbstractErrorHandler {
 	protected static $isHandlingException = false;
 
 	/**
+	 * List of arrays that have been "seen" by varDump() recursion.
+	 */
+	protected $vdSeenArrays;
+
+	/**
+	 * List of objects that have been "seen" by varDump() recursion.
+	 */
+	protected $vdSeenObjects;
+
+	/**
+	 * varDump() recursion level.
+	 */
+	protected $vdRecursion;
+
+	/**
 	 * Translate php error constants to (string) names.
 	 */
 	function errorCodeToStr($code) {
@@ -45,20 +60,18 @@ abstract class AbstractErrorHandler {
 	}
 	
 	function varDump(&$var) {
-		$this->cleanupArray = array();
-		$this->cleanupObj = array();
-		$this->recursionId = 1;
+		$this->vdSeenArrays = array();
+		$this->vdSeenObjects = array();
+		$this->vdRecursion = 1;
 		$ret = $this->__varDump($var);
 		for (
-				reset($this->cleanupArray);
-				null !== ($k = key($this->cleanupArray));
-				next($this->cleanupArray))
-			unset($this->cleanupArray[$k]["__varDump"]);
-		for (
-				reset($this->cleanupObj);
-				null !== ($k = key($this->cleanupObj));
-				next($this->cleanupObj))
-			unset($this->cleanupObj[$k]->__varDump);
+				reset($this->vdSeenArrays);
+				null !== ($k = key($this->vdSeenArrays));
+				next($this->vdSeenArrays))
+			unset($this->vdSeenArrays[$k]["__varDump"]);
+		foreach ($this->vdSeenObjects as $obj)
+			unset($obj["instance"]);
+		$this->vdSeenObjects = array();
 		return $ret;
 	}
 
@@ -67,10 +80,10 @@ abstract class AbstractErrorHandler {
 		case 'array':
 			if (isset($var["__varDump"]))
 				return "RECURSION (&" . $var["__varDump"] . ")";
-			$rec = $this->recursionId++;
+			$rec = $this->vdRecursion++;
 			$ret = "array &" . $rec . " (" . sizeof($var) . ") {";
 			$var["__varDump"] = $rec;
-			$this->cleanupArray[] =& $var;
+			$this->vdSeenArrays[] =& $var;
 			$indent2 = $indent . "  ";
 			for (reset($var); null !== ($k = key($var)); next($var)) {
 				if ("__varDump" === $k)
@@ -81,13 +94,13 @@ abstract class AbstractErrorHandler {
 			return $ret . "\n" . $indent . "}";
 		case 'object':
 			$m = (array)$var;
-			if (isset($m["__varDump"]))
-				return "RECURSION (&" . $var->__varDump . ")";
-			$rec = $this->recursionId++;
+			foreach ($this->vdSeenObjects as $obj)
+				if ($obj["instance"] === $var)
+					return "RECURSION (&" . $obj["recursion"] . ")";
+			$rec = $this->vdRecursion++;
 			$ret = "object &" . $rec . " (" . get_class($var) . ") {";
 			$indent2 = $indent . "  ";
-			$var->__varDump = $rec;
-			$this->cleanupObj[] =& $var;
+			$this->vdSeenObjects[] = array("instance" => $var, "recursion" => $rec);
 			for (reset($m); null !== ($k = key($m)); next($m)) {
 				do {
 					$visibility = "";
