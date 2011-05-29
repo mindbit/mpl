@@ -23,6 +23,9 @@ class HTML {
 	const TAG_CLOSE_HTML	= 1;
 	const TAG_CLOSE_XHTML	= true;
 
+	const TH				= "th";
+	const TD				= "td";
+
 	static function entities($string, $quote_style = ENT_COMPAT) {
 		return htmlentities($string, $quote_style, "UTF-8");
 	}
@@ -145,5 +148,36 @@ class HTML {
 		$submit["type"] = "submit";
 		$ret = self::tag("input", $submit) . self::hidden($name, "1");
 		return $ret;
+	}
+
+	static function tableRow($colTag, $rowAttr, $colAttr, $data) {
+		if (!is_array($data)) {
+			$data = func_get_args();
+			array_shift($data); // $colTag
+			array_shift($data); // $rowAttr
+			array_shift($data); // $colAttr
+		}
+		$ret = HTML::tag("tr", $rowAttr);
+		$i = 0;
+		$colAttrEach =
+			$colAttr !== null && isset($colAttr[0]) && is_array($colAttr[0]);
+		foreach ($data as $col) {
+			$ret .=
+				HTML::tag($colTag, $colAttrEach ? $colAttr[$i] : $colAttr) .
+				(is_array($col) ? implode("", $col) : HTML::entities($col)) .
+				"</" . $colTag . ">";
+		}
+		$ret .= "</tr>";
+		return $ret;
+	}
+
+	static function link($href, $text, $attr = null, $enabled = true) {
+		$text = is_array($text) ? implode("", $text) : HTML::entities($text);
+		if (!$enabled)
+			return '<font color="gray">' . $text . '</font>';
+		if ($attr === null)
+			$attr = array();
+		$attr["href"] = $href;
+		return HTML::tag("a", $attr) . $text . "</a>";
 	}
 }

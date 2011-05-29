@@ -18,8 +18,14 @@
  */
 
 class HTTP {
-	static function inVar($varName) {
-		return isset($_REQUEST[$varName])? $_REQUEST[$varName] : null;
+	static function inVar($varName, $default = null, $type = null) {
+		if (!isset($_REQUEST[$varName]))
+			return $default;
+		if ($type === null)
+			return $_REQUEST[$varName];
+		$ret = $_REQUEST[$varName];
+		settype($ret, $type);
+		return $ret;
 	}
 }
 ?>
