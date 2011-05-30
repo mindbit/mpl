@@ -87,6 +87,12 @@ abstract class SearchRequest extends BaseRequest {
 	function getData() {
 		return $this->data;
 	}
+
+	function addLike($criteria, $column, $field) {
+		if (!strlen($this->data[$field]))
+			return;
+		$criteria->add($column, '%' . trim($this->data[$field]) . '%', Criteria::LIKE);
+	}
 }
 
 ?>
