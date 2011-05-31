@@ -56,6 +56,10 @@ abstract class SimpleForm extends BaseForm {
 		}
 		return $submit;
 	}
+
+	function getWindowOpener($obj) {
+		return null;
+	}
 }
 
 ?>
