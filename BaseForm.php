@@ -66,6 +66,14 @@ abstract class BaseForm extends RequestDispatcher {
 			$this->om = $this->request->getOm();
 	}
 
+	function getOm() {
+		return $this->om;
+	}
+
+	function setOm($om) {
+		$this->om = $om;
+	}
+
 	function getDoctype() {
 	}
 
