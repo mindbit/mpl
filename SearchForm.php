@@ -76,6 +76,13 @@ abstract class SearchForm extends BaseForm {
 			echo HTML::hidden($key, $value);
 	}
 
+	function displayNoResults() {
+		?>
+		No results match your search criteria.<br>
+		<input type="button" value="New Search" onClick="searchNew()">
+		<?
+	}
+
 	function displayNavBarTop() {
 		?>
 		<table width="100%">
