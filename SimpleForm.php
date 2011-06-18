@@ -21,6 +21,10 @@ require_once "BaseForm.php";
 require_once "Locale.php";
 
 abstract class SimpleForm extends BaseForm {
+	const ACTION_SELF_CLOSE		= 0x01;
+	const ACTION_REFRESH_PARENT	= 0x02;
+	const ACTION_DEFAULT		= 0x03; // ACTION_SELF_CLOSE | ACTION_REFRESH_PARENT
+
 	function getSubmitAddText() {
 		return str_pad(__("Add"), 25, " ", STR_PAD_BOTH);
 	}
@@ -59,6 +63,62 @@ abstract class SimpleForm extends BaseForm {
 
 	function getWindowOpener($obj) {
 		return null;
+	}
+	function refreshParent($id = false, $class = false) {
+		if ($id === false)
+			$id = $this->om === null ? null: PropelUtil::getOmPkeyValue($this->om);
+		if ($class === false)
+			$class = get_class($this);
+		?>
+		<script type="text/javascript">
+		var parentForm;
+
+		if (window.opener && window.opener.document.forms[0]) {
+			parentForm = window.opener.document.forms[0];
+			if (parentForm.__refreshId)
+				parentForm.__refreshId.value = "<?= $id?>";
+			if (parentForm.__refreshClass)
+				parentForm.__refreshClass.value = "<?= $class?>";
+			parentForm.submit();
+		}
+		</script>
+		<?
+	}
+
+	function selfClose() {
+		?>
+		<script type="text/javascript">
+		self.close();
+		</script>
+		<?
+	}
+
+	function refreshTags() {
+		echo HTML::hidden("__refreshId", "");
+		echo HTML::hidden("__refreshClass", "");
+	}
+
+	function onSuccessfulOperation($operation, $action) {
+		$err = $this->request->getErrors();
+		if ($operation != $this->request->getOperationType() || !empty($err))
+			return false;
+		if ($action & self::ACTION_REFRESH_PARENT)
+			$this->refreshParent();
+		if ($action & self::ACTION_SELF_CLOSE)
+			$this->selfClose();
+		return true;
+	}
+
+	function onSuccessfulAdd($action = self::ACTION_DEFAULT) {
+		return $this->onSuccessfulOperation(OmRequest::OPERATION_ADD, $action);
+	}
+
+	function onSuccessfulUpdate($action = self::ACTION_DEFAULT) {
+		return $this->onSuccessfulOperation(OmRequest::OPERATION_UPDATE, $action);
+	}
+
+	function onSuccessfulRemove($action = self::ACTION_DEFAULT) {
+		return $this->onSuccessfulOperation(OmRequest::OPERATION_REMOVE, $action);
 	}
 }
 

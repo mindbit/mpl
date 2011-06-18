@@ -55,5 +55,12 @@ class PropelUtil {
 
 		return $ret;
 	}
+
+	static function getOmPkeyValue($om) {
+		$omPeer = $om->getPeer();
+		$pk = $omPeer->translateFieldName(self::getOmPkey($om), BasePeer::TYPE_COLNAME, BasePeer::TYPE_FIELDNAME);
+		$om = (array)$om;
+		return $om[self::PROTECTED_MAGIC . $pk];
+	}
 }
 ?>
