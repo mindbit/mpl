@@ -32,6 +32,11 @@ abstract class RequestDispatcher {
 		return null;
 	}
 
+	function getRequest()
+	{
+		return $this->request;
+	}
+
 	function write() {
 	}
 }
