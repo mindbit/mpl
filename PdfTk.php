@@ -40,7 +40,7 @@ class PdfTk {
 		return $ret;
 	}
 
-	function fillForm($input, $output, $data, $encoding = "utf-8", $flatten = false) {
+	static function fillForm($input, $output, $data, $encoding = "utf-8", $flatten = false) {
 		$fdf = self::fdf($data, $encoding);
 		$cmd = "pdftk " . escapeshellarg($input) . " fill_form - output " .
 			escapeshellarg($output);
