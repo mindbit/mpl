@@ -36,6 +36,12 @@ class ErrorHandler {
 		return self::$handlerInstance;
 	}
 
+	static function addMask($mask) {
+		$ret = ~error_reporting();
+		error_reporting(~($ret | $mask));
+		return $ret;
+	}
+
 	static function setMask($mask) {
 		return ~error_reporting(~$mask);
 	}
