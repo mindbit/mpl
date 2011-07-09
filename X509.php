@@ -74,12 +74,12 @@ class X509 {
 		$ret = "";
 		while (strlen($dec) > 2) {
 			$mod = bcmod($dec, 256);
-			$ret = dechex((int)$mod) . $glue . $ret;
+			$ret = str_pad(dechex((int)$mod), 2, '0', STR_PAD_LEFT) . $glue . $ret;
 			$glue = ":";
 			$dec = bcdiv(bcsub($dec, $mod), "256");
 		}
 		if ((int)$dec > 0 || $glue == "")
-			$ret = dechex((int)$dec) . $glue . $ret;
+			$ret = str_pad(dechex((int)$dec), 2, '0', STR_PAD_LEFT) . $glue . $ret;
 		return $ret;
 	}
 }
