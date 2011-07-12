@@ -32,8 +32,13 @@ abstract class RequestDispatcher {
 		return null;
 	}
 
-	function getRequest()
-	{
+	function setRequest($request) {
+		$this->request = $request;
+		if ($this->request instanceof OmRequest)
+			$this->om = $this->request->getOm();
+	}
+
+	function getRequest() {
 		return $this->request;
 	}
 
