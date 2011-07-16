@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+require_once "BC.php";
+
 class X509 {
 	protected $pem;
 	protected $data;
@@ -70,17 +72,10 @@ class X509 {
 	}
 
 	function bcDecHex($dec) {
-		$glue = "";
-		$ret = "";
-		while (strlen($dec) > 2) {
-			$mod = bcmod($dec, 256);
-			$ret = str_pad(dechex((int)$mod), 2, '0', STR_PAD_LEFT) . $glue . $ret;
-			$glue = ":";
-			$dec = bcdiv(bcsub($dec, $mod), "256");
-		}
-		if ((int)$dec > 0 || $glue == "")
-			$ret = str_pad(dechex((int)$dec), 2, '0', STR_PAD_LEFT) . $glue . $ret;
-		return $ret;
+		$hex = BC::baseConvert($dec, 10, 16);
+		if (strlen($hex) % 2)
+			$hex = "0" . $hex;
+		return implode(':', str_split($hex, 2));
 	}
 }
 
