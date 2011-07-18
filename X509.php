@@ -43,7 +43,7 @@ class X509 {
 		}
 	}
 
-	function base64toPEM($data) {
+	static function base64toPEM($data) {
 		return
 			"-----BEGIN CERTIFICATE-----\n" .
 			chunk_split($data, 64, "\n") .
@@ -54,6 +54,42 @@ class X509 {
 		if ($this->data !== null)
 			return;
 		$this->data = openssl_x509_parse($this->pem);
+	}
+
+	static function pemToDer($pem)
+	{
+		$split = explode("\n",$pem);
+		$stare = 0;
+		$result="";
+		foreach ($split as $line)
+		{
+			switch ($stare)
+			{
+			case 0:
+				if (substr($line,0,2) != "--")
+					continue;
+				$stare = 1;
+				break;
+			case 1:
+				if (substr($line,0,2) != "--")
+				{ 
+					$result.= trim($line); 
+					continue;
+				}
+				return base64_decode($result);
+				break;
+			}
+		}
+	}
+
+	function getDer()
+	{
+		return $this->pemToDer($this->pem);
+	}
+	
+	function getPem()
+	{
+		return $this->pem;
 	}
 
 	function getData() {
