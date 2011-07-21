@@ -150,13 +150,13 @@ class RFC3739QcOid {
 	function __construct() {
 		$this->qcs = new AsnObjectId("1.3.6.1.5.5.7.11");
 		$this->qcsPkixQcSyntaxV1 = $this->qcs->branch("1");
-		$this->qcsPkixQcSyntaxV2 = $this->qcs->branch("1");
+		$this->qcsPkixQcSyntaxV2 = $this->qcs->branch("2");
 	}
 
 	function getOidMap() {
 		return array(
-				$this->qcsPkixQcSyntaxV1->getData() => "PKIX QC Syntax v1",
-				$this->qcsPkixQcSyntaxV2->getData() => "PKIX QC Syntax v2"
+				$this->qcsPkixQcSyntaxV1->getData() => "PKIX QCSyntax-v1",
+				$this->qcsPkixQcSyntaxV2->getData() => "PKIX QCSyntax-v2"
 				);
 	}
 }
@@ -172,10 +172,10 @@ class EtsiQcOid {
 
 	function getOidMap() {
 		return array(
-				$this->etsiQcsQcCompliance->getData() => "ETSI QCS QC Compliance",
-				$this->etsiQcsLimitValue->getData() => "ETSI QCS Limit Value",
-				$this->etsiQcsRetentionPeriod->getData() => "ETSI QCS Retention Period",
-				$this->etsiQcsQcSSCD->getData() => "ETSI QCS QC SSCD"
+				$this->etsiQcsQcCompliance->getData() => "ETSI QC Compliance",
+				$this->etsiQcsLimitValue->getData() => "ETSI Transaction Value Limit",
+				$this->etsiQcsRetentionPeriod->getData() => "ETSI Retention Period",
+				$this->etsiQcsQcSSCD->getData() => "ETSI Secure Signature Creation Device"
 				);
 	}
 }
