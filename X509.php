@@ -18,6 +18,7 @@
  */
 
 require_once "BC.php";
+require_once "Asn.php";
 
 class X509 {
 	protected $pem;
@@ -112,6 +113,70 @@ class X509 {
 		if (strlen($hex) % 2)
 			$hex = "0" . $hex;
 		return implode(':', str_split($hex, 2));
+	}
+
+	function buildQcOidMap() {
+		$rfc3739 = new RFC3739QcOid();
+		$etsi = new EtsiQcOid();
+		return array_merge($rfc3739->getOidMap(), $etsi->getOidMap());
+	}
+
+	function parseQcOid($oid) {
+		$map = $this->buildQcOidMap();
+		return (isset($map[$oid]) ? $map[$oid] : "OID") .
+			" [" . $oid . "]";
+	}
+
+	function parseQcStatements() {
+		$this->parse();
+		if (!isset($this->data["extensions"]))
+			return null;
+		if (!isset($this->data["extensions"]["qcStatements"]))
+			return null;
+		$asn = Asn::parse($this->data["extensions"]["qcStatements"]);
+		assert($asn[0] instanceof AsnSequence);
+		$ret = array();
+		foreach ($asn[0] as $qcStatement) {
+			assert($qcStatement instanceof AsnSequence);
+			assert($qcStatement[0] instanceof AsnObjectId);
+			$ret[$this->parseQcOID($qcStatement[0]->getData())] =
+				isset($qcStatement[1]) ? $qcStatement[1]->getData : null;
+		}
+		return $ret;
+	}
+}
+
+class RFC3739QcOid {
+	function __construct() {
+		$this->qcs = new AsnObjectId("1.3.6.1.5.5.7.11");
+		$this->qcsPkixQcSyntaxV1 = $this->qcs->branch("1");
+		$this->qcsPkixQcSyntaxV2 = $this->qcs->branch("1");
+	}
+
+	function getOidMap() {
+		return array(
+				$this->qcsPkixQcSyntaxV1->getData() => "PKIX QC Syntax v1",
+				$this->qcsPkixQcSyntaxV2->getData() => "PKIX QC Syntax v2"
+				);
+	}
+}
+
+class EtsiQcOid {
+	function __construct() {
+		$this->etsiQcs = new AsnObjectId("0.4.0.1862.1");
+		$this->etsiQcsQcCompliance = $this->etsiQcs->branch("1");
+		$this->etsiQcsLimitValue = $this->etsiQcs->branch("2");
+		$this->etsiQcsRetentionPeriod = $this->etsiQcs->branch("3");
+		$this->etsiQcsQcSSCD = $this->etsiQcs->branch("4");
+	}
+
+	function getOidMap() {
+		return array(
+				$this->etsiQcsQcCompliance->getData() => "ETSI QCS QC Compliance",
+				$this->etsiQcsLimitValue->getData() => "ETSI QCS Limit Value",
+				$this->etsiQcsRetentionPeriod->getData() => "ETSI QCS Retention Period",
+				$this->etsiQcsQcSSCD->getData() => "ETSI QCS QC SSCD"
+				);
 	}
 }
 
