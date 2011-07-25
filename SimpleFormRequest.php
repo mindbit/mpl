@@ -103,7 +103,7 @@ abstract class SimpleFormRequest extends OmRequest {
 				$this->doNew();
 			}
 		} catch (Exception $e) {
-			$this->err[] = $e->getMessage();
+			$this->handleOmException($e);
 		}
 
 		switch($this->operationType) {
@@ -119,6 +119,10 @@ abstract class SimpleFormRequest extends OmRequest {
 			$this->setState(self::STATE_UPDATE);
 			break;
 		}
+	}
+
+	protected function handleOmException($e) {
+		$this->err[] = $e->getMessage();
 	}
 }
 
