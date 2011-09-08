@@ -22,26 +22,26 @@ require_once "BaseForm.php";
 abstract class SearchForm extends BaseForm {
 	protected $pager;
 	protected $data;
-	protected $row, $rpp;
+	protected $offset, $limit;
 
 	function __construct() {
 		parent::__construct();
-		$this->pager = $this->request->getPager();
 		$this->data = $this->request->getData();
-		$this->rpp = $this->pager->getRowsPerPage();
-		$this->row = $this->rpp * ($this->pager->getPage() - 1);
+		$this->limit = $this->request->getLimit();
+		$this->offset = $this->request->getOffset();
 	}
 
 	function form() {
 		echo HTML::hidden("__search_do", 1);
-		echo HTML::hidden("__search_limit", $this->rpp);
+		echo HTML::hidden("__search_limit", $this->limit);
 		switch ($this->request->getState()) {
 		case SearchRequest::STATE_FORM:
 			echo HTML::hidden("__search_offset", 0);
 			$this->displayForm();
 			break;
 		case SearchRequest::STATE_RESULTS:
-			echo HTML::hidden("__search_offset", $this->row);
+			echo HTML::hidden("__search_offset", $this->offset);
+			$this->pager = $this->request->getPager();
 			$this->displayResults();
 			break;
 		}
@@ -64,7 +64,7 @@ abstract class SearchForm extends BaseForm {
 			$this->displayResultsHeader();
 			$results = $this->pager->getResult();
 			foreach ($results as $result) {
-				$this->row++;
+				$this->offset++;
 				$this->displayResult($result);
 			}
 			$this->displayResultsFooter();
@@ -87,9 +87,9 @@ abstract class SearchForm extends BaseForm {
 		?>
 		<table width="100%">
 		<tr>
-			<td width="33%">Results <b><?= $this->row + 1?></b> - <b><?= min($this->row + $this->rpp, $this->pager->getTotalRecordCount())?></b> out of <b><?= $this->pager->getTotalRecordCount()?></b></td>
+			<td width="33%">Results <b><?= $this->offset + 1?></b> - <b><?= min($this->offset + $this->limit, $this->pager->getTotalRecordCount())?></b> out of <b><?= $this->pager->getTotalRecordCount()?></b></td>
 			<td align="center"><? $this->displayPageList(); ?></td>
-			<td width="33%" align="right">Results/page <?= HTML::select("__search_rpp", $this->rpp, $this->getRppOptions(), false, null, array("onChange" => "searchChangeRpp()"))?></td>
+			<td width="33%" align="right">Results/page <?= HTML::select("__search_rpp", $this->limit, $this->getRppOptions(), false, null, array("onChange" => "searchChangeRpp()"))?></td>
 		</tr>
 		</table>
 		<hr width="100%">
@@ -154,7 +154,7 @@ abstract class SearchForm extends BaseForm {
 			document.forms[0].submit();
 		}
 		function searchPage(page) {
-			document.forms[0].__search_offset.value = <?= $this->rpp ?> * (page - 1);
+			document.forms[0].__search_offset.value = <?= $this->limit ?> * (page - 1);
 			document.forms[0].submit();
 		}
 		</script>

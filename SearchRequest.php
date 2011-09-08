@@ -34,7 +34,6 @@ abstract class SearchRequest extends BaseRequest {
 
 	protected function init() {
 		$this->data = $this->initData();
-		$this->pager = new PropelPager();
 		$this->limit = 10;
 		$this->offset = 0;
 	}
@@ -66,15 +65,16 @@ abstract class SearchRequest extends BaseRequest {
 		$this->init();
 		$this->decode();
 
-		$this->pager->setPage(1 + (int)floor($this->offset / $this->limit));
-		$this->pager->setRowsPerPage($this->limit);
-
 		if (!HTTP::inVar("__search_do")) {
 			$this->setState(self::STATE_FORM);
 			return;
 		}
 
 		$this->setState(self::STATE_RESULTS);
+
+		$this->pager = new PropelPager();
+		$this->pager->setPage(1 + (int)floor($this->offset / $this->limit));
+		$this->pager->setRowsPerPage($this->limit);
 		$this->pager->setPeerClass($this->getPeerClass());
 		$this->pager->setPeerSelectMethod($this->getPeerSelectMethod());
 		$this->pager->setCriteria($this->createCriteria());
@@ -86,6 +86,14 @@ abstract class SearchRequest extends BaseRequest {
 
 	function getData() {
 		return $this->data;
+	}
+
+	function getLimit() {
+		return $this->limit;
+	}
+
+	function getOffset() {
+		return $this->offset;
 	}
 
 	function addLike($criteria, $column, $field) {
