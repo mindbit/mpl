@@ -20,7 +20,7 @@
 require_once 'BaseRequest.php';
 require_once 'HTTP.php';
 
-abstract class SearchRequest extends BaseRequest {
+abstract class BaseSearchRequest extends BaseRequest {
 	const STATE_FORM = 1;
 	const STATE_RESULTS = 2;
 
@@ -54,13 +54,6 @@ abstract class SearchRequest extends BaseRequest {
 		$this->limit = HTTP::inVar("__search_limit", 10, "integer");
 	}
 
-	abstract function createCriteria();
-	abstract function getPeerClass();
-	
-	function getPeerSelectMethod() {
-		return "doSelect";
-	}
-
 	function dispatch() {
 		$this->init();
 		$this->decode();
@@ -71,14 +64,10 @@ abstract class SearchRequest extends BaseRequest {
 		}
 
 		$this->setState(self::STATE_RESULTS);
-
-		$this->pager = new PropelPager();
-		$this->pager->setPage(1 + (int)floor($this->offset / $this->limit));
-		$this->pager->setRowsPerPage($this->limit);
-		$this->pager->setPeerClass($this->getPeerClass());
-		$this->pager->setPeerSelectMethod($this->getPeerSelectMethod());
-		$this->pager->setCriteria($this->createCriteria());
+		$this->initPager();
 	}
+
+	abstract function initPager();
 
 	function getPager() {
 		return $this->pager;
@@ -98,9 +87,114 @@ abstract class SearchRequest extends BaseRequest {
 
 	function addLike($criteria, $column, $field) {
 		if (!strlen($this->data[$field]))
-			return;
+			return $criteria;
 		$criteria->add($column, '%' . trim($this->data[$field]) . '%', Criteria::LIKE);
+		return $criteria;
+	}
+
+	function setQueryPager($query) {
+		$this->pager = new PropelModelPagerAdapter($query->paginate(
+					1 + (int)floor($this->offset / $this->limit),
+					$this->limit));
 	}
 }
 
+abstract class SearchRequest extends BaseSearchRequest {
+	abstract function createCriteria();
+	abstract function getPeerClass();
+
+	function getPeerSelectMethod() {
+		return "doSelect";
+	}
+
+	function initPager() {
+		$this->pager = new PropelPager();
+		$this->pager->setPage(1 + (int)floor($this->offset / $this->limit));
+		$this->pager->setRowsPerPage($this->limit);
+		$this->pager->setPeerClass($this->getPeerClass());
+		$this->pager->setPeerSelectMethod($this->getPeerSelectMethod());
+		$this->pager->setCriteria($this->createCriteria());
+	}
+}
+
+/**
+ * Encapsulate a PropelModelPager and expose required PropelPager
+ * functionality.
+ */
+class PropelModelPagerAdapter {
+	protected $pager;
+
+	function __construct($pager) {
+		$this->pager = $pager;
+	}
+
+	function getTotalRecordCount() {
+		return $this->pager->count();
+	}
+
+	function getPage() {
+		return $this->pager->getPage();
+	}
+
+	function getTotalPages() {
+		return $this->pager->getLastPage();
+	}
+
+	function getFirstPage() {
+		return $this->pager->getFirstPage();
+	}
+
+	function getLastPage() {
+		return $this->pager->getLastPage();
+	}
+
+	function getResult() {
+		return $this->pager->getResults();
+	}
+
+	/**
+	 * get an array of previous id's
+	 *
+	 * @param      int $range
+	 * @return     array $links
+	 */
+	function getPrevLinks($range = 5) {
+		$total = $this->getTotalPages();
+		$start = $this->getPage() - 1;
+		$end = $this->getPage() - $range;
+		$first =  $this->getFirstPage();
+		$links = array();
+		for ($i=$start; $i>$end; $i--) {
+			if ($i < $first) {
+					break;
+			}
+			$links[] = $i;
+		}
+
+		return array_reverse($links);
+	}
+
+	/**
+	 * get an array of next id's
+	 *
+	 * @param      int $range
+	 * @return     array $links
+	 */
+	public function getNextLinks($range = 5)
+	{
+		$total = $this->getTotalPages();
+		$start = $this->getPage() + 1;
+		$end = $this->getPage() + $range;
+		$last =  $this->getLastPage();
+		$links = array();
+		for ($i=$start; $i<$end; $i++) {
+			if ($i > $last) {
+					break;
+			}
+			$links[] = $i;
+		}
+
+		return $links;
+	}
+}
 ?>
