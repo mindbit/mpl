@@ -115,6 +115,10 @@ class X509 {
 		return implode(':', str_split($hex, 2));
 	}
 
+	function bcHexDec($hex){
+		$hex = str_replace(':','',$hex);
+		return BC::baseConvert($hex, 16, 10);
+	}
 	function buildQcOidMap() {
 		$rfc3739 = new RFC3739QcOid();
 		$etsi = new EtsiQcOid();
