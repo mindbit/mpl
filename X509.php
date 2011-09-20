@@ -115,7 +115,7 @@ class X509 {
 		return implode(':', str_split($hex, 2));
 	}
 
-	function bcHexDec($hex){
+	static function bcHexDec($hex){
 		$hex = str_replace(':','',$hex);
 		return BC::baseConvert($hex, 16, 10);
 	}
