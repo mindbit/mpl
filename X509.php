@@ -115,8 +115,8 @@ class X509 {
 		return implode(':', str_split($hex, 2));
 	}
 
-	static function bcHexDec($hex){
-		$hex = str_replace(':','',$hex);
+	static function bcHexDec($hex, $split){
+		$hex = str_replace($split,'',$hex);
 		return BC::baseConvert($hex, 16, 10);
 	}
 	function buildQcOidMap() {
