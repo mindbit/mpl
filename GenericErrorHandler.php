@@ -30,13 +30,17 @@ define("STR_ALIGN_CENTER",		STR_PAD_BOTH);
 define("STR_ALIGN_RIGHT",		STR_PAD_LEFT);
 
 class GenericErrorHandler extends AbstractErrorHandler {
-	const DISPLAY_FORMAT_NONE = 0;
-	const DISPLAY_FORMAT_HTML = 1;
-	const DISPLAY_FORMAT_TEXT = 2;
+	const DISPLAY_FORMAT_NONE	= 0;
+	const DISPLAY_FORMAT_HTML	= 1;
+	const DISPLAY_FORMAT_TEXT	= 2;
+
+	const MAIL_TO				= "mail_to";
+	const MAIL_FROM				= "mail_from";
 
 	protected $displayFormat = self::DISPLAY_FORMAT_NONE;
 	protected $outputBuffering = false;
 	protected $initialObLevel;
+	protected $mailProps;
 
 	function __construct() {
 		$this->displayFormat =
@@ -185,35 +189,39 @@ class GenericErrorHandler extends AbstractErrorHandler {
 		}
 	}
 
-	function logErrorHeader() {
-		$this->log("============================== ERROR ==============================");
+	function formatErrorHeader() {
+		return "============================== ERROR ==============================\n";
 	}
 
-	function logErrorBody($data) {
-		$this->log("== Code:        " . $data["textCode"]);
-		$this->log("== Description: " . $data["description"]);
-		$this->log("== Filename:    " . $data["filename"]);
-		$this->log("== Line:        " . $data["line"]);
+	function formatErrorBody($data) {
+		$ret = '';
+
+		$ret .= "== Code:        " . $data["textCode"] . "\n";
+		$ret .= "== Description: " . $data["description"] . "\n";
+		$ret .= "== Filename:    " . $data["filename"] . "\n";
+		$ret .= "== Line:        " . $data["line"] . "\n";
 
 		if (isset($_SERVER["REMOTE_ADDR"]))
-			$this->log("== Remote IP:   " . $_SERVER["REMOTE_ADDR"]);
+			$ret .= "== Remote IP:   " . $_SERVER["REMOTE_ADDR"] . "\n";
 
-		$this->log("== Backtrace:");
+		$ret .= "== Backtrace:" . "\n";
 		$backtrace = explode("\n", $data["renderedBacktrace"]);
 		foreach ($backtrace as $frame) {
 			if (!strlen(trim($frame)))
 				continue;
-			$this->log("==     " . $frame);
+			$ret .= "==     " . $frame . "\n";
 		}
 
-		$this->log("== Context:");
+		$ret .= "== Context:";
 		$_context = explode("\n", $data["dumpedContext"]);
 		foreach ($_context as $c)
-			$this->log("==     " . $c);
+			$ret .= "==     " . $c . "\n";
+
+		return $ret;
 	}
 
-	function logErrorFooter() {
-		$this->log("===================================================================");
+	function formatErrorFooter() {
+		return "===================================================================\n";
 	}
 
 	function logException($e) {
@@ -230,8 +238,30 @@ class GenericErrorHandler extends AbstractErrorHandler {
 		$this->log("===================================================================");
 	}
 
+	function mailErrorSubject($data) {
+		return "[" . php_uname("n") . "] error in file " . $data["filename"] .
+			", line " . $data["line"];
+	}
+
+	function logErrorHeader() {
+		$this->logFormatted($this->formatErrorHeader());
+	}
+
+	function logErrorBody($data) {
+		$this->logFormatted($this->formatErrorBody($data));
+	}
+
+	function logErrorFooter() {
+		$this->logFormatted($this->formatErrorFooter());
+	}
+
 	function log($message) {
 		Env::log($message);
+	}
+
+	function logFormatted($message) {
+		foreach (explode("\n", rtrim($message, "\n")) as $message)
+			$this->log($message);
 	}
 
 	function handleSingleError($data) {
@@ -247,6 +277,16 @@ class GenericErrorHandler extends AbstractErrorHandler {
 		$this->logErrorHeader();
 		$this->logErrorBody($data);
 		$this->logErrorFooter();
+
+		// send mail
+		if ($this->mailProps) {
+			mail($this->mailProps[self::MAIL_TO], $this->mailErrorSubject($data),
+					$this->formatErrorHeader() .
+					$this->formatErrorBody($data) .
+					$this->formatErrorFooter(),
+					"From: " . $this->mailProps[self::MAIL_FROM],
+					"-f" . $this->mailProps[self::MAIL_FROM]);
+		}
 
 		// display
 		$this->displayErrorHeader();
