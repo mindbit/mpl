@@ -47,8 +47,7 @@ class GenericErrorHandler extends AbstractErrorHandler {
 	function onActivate() {
 		if ($this->outputBuffering) {
 			$this->initialObLevel = ob_get_level();
-			if (!$this->initialObLevel)
-				ob_start();
+			ob_start();
 		}
 	}
 
@@ -63,10 +62,13 @@ class GenericErrorHandler extends AbstractErrorHandler {
 	 * Get the output buffer contents on ALL LEVELS and also DISABLE
 	 * outbut buffering.
 	 */
-	function getOutputBuffer() {
+	function getOutputBuffer($all = false) {
 		$ret = "";
-		while (ob_get_level()) {
+		$limit = $all ? 0 : $this->initialObLevel;
+		while (ob_get_level() > $limit) {
 			$ret = ob_get_contents() . $ret;
+			// FIXME concatenating does not work well with handlers that make changes
+			// to buffers (such as the gzhandler)
 			ob_end_clean();
 		}
 		return $ret;
@@ -81,13 +83,8 @@ class GenericErrorHandler extends AbstractErrorHandler {
 	 * or when data is fetched from another server using the curl
 	 * extension).
 	 */
-	function disableBuffering() {
-		while (ob_get_level())
-			echo ob_get_clean();
-		// the trick is that with ob_get_clean() we can still send headers
-		// if we actually had no output (as opposed to ob_end_flush() that
-		// always sends data to the client regardless if we had any output
-		// or not)
+	function disableBuffering($all = true) {
+		echo $this->getOutputBuffer($all);
 	}
 
 	function displayErrorHeader() {
