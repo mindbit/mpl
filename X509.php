@@ -108,17 +108,18 @@ class X509 {
 		return $ret;
 	}
 
-	function bcDecHex($dec) {
+	static function bcDecHex($dec, $glue = ':') {
 		$hex = BC::baseConvert($dec, 10, 16);
 		if (strlen($hex) % 2)
 			$hex = "0" . $hex;
-		return implode(':', str_split($hex, 2));
+		return implode($glue, str_split($hex, 2));
 	}
 
 	static function bcHexDec($hex, $split = ':') {
 		$hex = str_replace($split,'',$hex);
 		return BC::baseConvert($hex, 16, 10);
 	}
+
 	function buildQcOidMap() {
 		$rfc3739 = new RFC3739QcOid();
 		$etsi = new EtsiQcOid();
