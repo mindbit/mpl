@@ -23,6 +23,7 @@ require_once "Asn.php";
 class X509 {
 	protected $pem;
 	protected $data;
+	protected $publicKey;
 
 	const FORMAT_BASE64		= 1;
 	const FORMAT_DER		= 2;
@@ -57,30 +58,29 @@ class X509 {
 		$this->data = openssl_x509_parse($this->pem);
 	}
 
-	static function pemToDer($pem)
-	{
-		$split = explode("\n",$pem);
-		$stare = 0;
-		$result="";
-		foreach ($split as $line)
-		{
-			switch ($stare)
-			{
+	static function pemToBase64($pem) {
+		$pem = explode("\n", $pem);
+		$state = 0;
+		$ret =  "";
+		foreach ($pem as $line) {
+			switch ($state) {
 			case 0:
-				if (substr($line,0,2) != "--")
+				if (substr($line, 0, 2) != "--")
 					continue;
-				$stare = 1;
+				$state = 1;
 				break;
 			case 1:
-				if (substr($line,0,2) != "--")
-				{ 
-					$result.= trim($line); 
+				if (substr($line, 0, 2) != "--") {
+					$ret .= trim($line);
 					continue;
 				}
-				return base64_decode($result);
-				break;
+				return $ret;
 			}
 		}
+	}
+
+	static function pemToDer($pem) {
+		return base64_decode(self::pemToBase64($pem));
 	}
 
 	function getDer()
@@ -148,6 +148,85 @@ class X509 {
 				isset($qcStatement[1]) ? $qcStatement[1]->getData : null;
 		}
 		return $ret;
+	}
+
+	function getPublicKey() {
+		if ($this->publicKey != null)
+			return $this->publicKey;
+		$x509 = openssl_x509_read($this->pem);
+		$publicKey = openssl_pkey_get_public($x509);
+		$this->publicKey = new PublicKey(openssl_pkey_get_details($publicKey), GenericKey::FORMAT_DATA);
+		openssl_pkey_free($publicKey);
+		openssl_x509_free($x509);
+		return $this->publicKey;
+	}
+}
+
+abstract class GenericKey {
+	protected $pem;
+	protected $data;
+
+	const FORMAT_BASE64		= 1;
+	const FORMAT_DER		= 2;
+	const FORMAT_PEM		= 3;
+	const FORMAT_DATA		= 4;
+
+	function __construct($pKey, $format = self::FORMAT_PEM) {
+		switch ($format) {
+		case self::FORMAT_DATA:
+			$this->data = $pKey;
+			$this->pem = $pKey['key'];
+			break;
+		case self::FORMAT_PEM:
+			$this->pem = $pKey;
+			break;
+		default:
+			throw new Exception("FIXME");
+		}
+	}
+
+	function __toString() {
+		return $this->pem;
+	}
+
+	abstract function parse();
+
+	static function keyTypeString($keyType) {
+		switch ($keyType) {
+		case OPENSSL_KEYTYPE_RSA:
+			return 'RSA';
+		case OPENSSL_KEYTYPE_DSA:
+			return 'DSA';
+		case OPENSSL_KEYTYPE_DH:
+			return 'DH';
+		case OPENSSL_KEYTYPE_EC:
+			return 'EC';
+		}
+	}
+
+	function getData() {
+		$this->parse();
+		return $this->data;
+	}
+
+	function getInfo() {
+		$this->parse();
+		$ret = array(
+				"Type"		=> self::keyTypeString($this->data['type']),
+				"Length"	=> $this->data['bits'],
+				"PEM"		=> $this->data['key']
+				);
+		return $ret;
+	}
+}
+
+class PublicKey extends GenericKey {
+	function parse() {
+		if ($this->data !== null)
+			return;
+		$key = openssl_pkey_get_public($this->pem);
+		$this->data = openssl_pkey_get_details($key);
+		openssl_pkey_free($key);
 	}
 }
 
