@@ -83,6 +83,10 @@ class X509 {
 		return base64_decode(self::pemToBase64($pem));
 	}
 
+	function getBase64() {
+		return $this->pemToBase64($this->pem);
+	}
+
 	function getDer()
 	{
 		return $this->pemToDer($this->pem);
