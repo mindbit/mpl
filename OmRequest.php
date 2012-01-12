@@ -46,9 +46,23 @@ abstract class OmRequest extends BaseRequest {
 	}
 
 	protected function setOmFields($data) {
+		$tableMap = $this->omPeer->getTableMap();
 		foreach ($data as $field => $value) {
 			$phpName = $this->omPeer->translateFieldName($field, BasePeer::TYPE_FIELDNAME,
 					BasePeer::TYPE_PHPNAME);
+			// The following block worksaround the following issue: when text
+			// fields are set to their default value during update, they are
+			// not actually saved into the database. Look at the doSave()
+			// method below for the full comment.
+			//
+			// All this mess is because BaseObject::$modifiedColumns is
+			// protected and therefore we cannot explicitly set the column
+			// as modified.
+			if ($this->operationType == self::OPERATION_UPDATE) {
+				$column = $tableMap->getColumn($field);
+				if ($column->isText())
+					call_user_func(array($this->om, "set".$phpName), '_' . $data[$field]);
+			}
 			call_user_func(array($this->om, "set".$phpName), $data[$field]);
 		}
 	}
@@ -102,10 +116,26 @@ abstract class OmRequest extends BaseRequest {
 			$this->err = array_merge($this->err, $this->om->getValidationFailures());
 			return;
 		}
-		// intentionally call setNew() *AFTER* setOmFields() was called, because
+		// Intentionally call setNew() *AFTER* setOmFields() was called, because
 		// otherwise updating a field to its default value would not work (the OM
 		// class constructor sets all fields to their default values and all
 		// setter methods check if we actually change the value)
+		//
+		// Actually, this only works for integer type fields, where the Propel
+		// generated setter code looks something like this:
+		//     if ($this->reinnoire !== $v || $this->isNew()) {
+		//         $this->reinnoire = $v;
+		//         $this->modifiedColumns[] = DgsCertificatPeer::REINNOIRE;
+		//     }
+		//
+		// On the other hand, for text fields the "new" state is not checked:
+		//     if ($this->cert_ai_org !== $v) {
+		//         $this->cert_ai_org = $v;
+		//         $this->modifiedColumns[] = DgsCertificatPeer::CERT_AI_ORG;
+		//     }
+		//
+		// The case is almost the same for DateTime fields, but that's more
+		// complex.
 		if ($this->operationType == self::OPERATION_UPDATE)
 			$this->om->setNew(false);
 		$this->__doSave();
