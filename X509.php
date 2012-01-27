@@ -46,6 +46,10 @@ class X509 {
 	}
 
 	static function base64toPEM($data) {
+		$data = strtr($data, array(
+					"\r" => "",
+					"\n" => ""
+					));
 		return
 			"-----BEGIN CERTIFICATE-----\n" .
 			chunk_split($data, 64, "\n") .
