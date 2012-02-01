@@ -168,6 +168,35 @@ class X509 {
 		openssl_x509_free($x509);
 		return $this->publicKey;
 	}
+
+	/**
+	 * Escape DN field according to RFC 2253.
+	 */
+	static function escapeDnField($str) {
+		if (!strlen($str))
+			return $str;
+
+		$str = strtr($str, array(
+					','		=> '\\,',
+					'+'		=> '\\+',
+					'"'		=> '\\"',
+					'\\'	=> '\\\\',
+					'<'		=> '\\<',
+					'>'		=> '\\>',
+					';'		=> '\\;'
+					));
+
+		if ($str[0] == ' ' || $str[0] == '#')
+			$str = '\\' . $str;
+
+		$len = strlen($str) - 1;
+		if ($str[$len] == ' ') {
+			$str[$len] = '\\';
+			$str .= ' ';
+		}
+
+		return $str;
+	}
 }
 
 abstract class GenericKey {
