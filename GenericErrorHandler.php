@@ -201,8 +201,8 @@ class GenericErrorHandler extends AbstractErrorHandler {
 		$ret .= "== Filename:    " . $data["filename"] . "\n";
 		$ret .= "== Line:        " . $data["line"] . "\n";
 
-		if (isset($_SERVER["REMOTE_ADDR"]))
-			$ret .= "== Remote IP:   " . $_SERVER["REMOTE_ADDR"] . "\n";
+		if (($remoteAddr = $this->getRemoteAddr()) != null)
+			$ret .= "== Remote IP:   " . $remoteAddr . "\n";
 
 		$ret .= "== Backtrace:" . "\n";
 		$backtrace = explode("\n", $data["renderedBacktrace"]);
@@ -262,6 +262,11 @@ class GenericErrorHandler extends AbstractErrorHandler {
 	function logFormatted($message) {
 		foreach (explode("\n", rtrim($message, "\n")) as $message)
 			$this->log($message);
+	}
+
+	function getRemoteAddr() {
+		return isset($_SERVER["REMOTE_ADDR"]) ?
+			$_SERVER["REMOTE_ADDR"] : null;
 	}
 
 	function handleSingleError($data) {
