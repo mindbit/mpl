@@ -59,9 +59,11 @@ class Env {
 		if ($behindProxy && isset($_SERVER["HTTP_X_FORWARDED_FOR"])) {
 			$adr = explode(",", $_SERVER["HTTP_X_FORWARDED_FOR"]);
 			$adr = array_pop($adr);
-			return $adr == "unknown" ? $_SERVER["REMOTE_ADDR"] : $adr;
+			if ($adr != "unknown")
+				return $adr;
 		}
-		return $_SERVER["REMOTE_ADDR"];
+		return isset($_SERVER["REMOTE_ADDR"]) ?
+			$_SERVER["REMOTE_ADDR"] : null;
 	}
 }
 
