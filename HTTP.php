@@ -27,5 +27,22 @@ class HTTP {
 		settype($ret, $type);
 		return $ret;
 	}
+
+	static function rawRequest($includeRequest = true, $includeHeaders = true) {
+		$hdr = "";
+		if ($includeRequest) {
+			$hdr .=
+				$_SERVER['REQUEST_METHOD'] . ' ' .
+				$_SERVER['REQUEST_URI'] .
+				"\r\n";
+		}
+		if ($includeHeaders) {
+			$hdrArray = apache_request_headers();
+			foreach ($hdrArray as $name => $value)
+				$hdr .= $name . ": " . $value . "\r\n";
+			$hdr .= "\r\n";
+		}
+		return $hdr . file_get_contents('php://input');
+	}
 }
 ?>
