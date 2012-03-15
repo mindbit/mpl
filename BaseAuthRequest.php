@@ -57,13 +57,13 @@ abstract class BaseAuthRequest extends BaseRequest {
 	const S_AUTH_REQUIRED		= 4;
 
 	function decode() {
-		if (!isset($_POST["operationType"])) {
+		if (!isset($_REQUEST["operationType"])) {
 			$this->operationType = self::OP_CHECK;
 			return;
 		}
-		if (!in_array($_POST["operationType"], $this->validOperationTypes))
+		if (!in_array($_REQUEST["operationType"], $this->validOperationTypes))
 			throw new Exception("Invalid operation type");
-		$this->operationType = $_POST["operationType"];
+		$this->operationType = $_REQUEST["operationType"];
 	}
 
 	function dispatch() {
@@ -124,9 +124,9 @@ abstract class BaseAuthRequest extends BaseRequest {
 	 * were not found in request.
 	 */
 	function validateUser() {
-		if (!isset($_POST["username"]) || !isset($_POST["password"]))
+		if (!isset($_REQUEST["username"]) || !isset($_REQUEST["password"]))
 			return null;
-		$u = $this->authenticateUser($_POST["username"], $_POST["password"]);
+		$u = $this->authenticateUser($_REQUEST["username"], $_REQUEST["password"]);
 		return is_object($u) ? $u : false;
 	}
 
