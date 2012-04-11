@@ -136,11 +136,17 @@ class HTML {
 		return $ret;
 	}
 
-	static function hidden($name, $value) {
-		return '<input type="hidden" name="' . self::entities($name) . '" value="' .
-			self::entities($value) . '">';
-	}
+	static function hidden($name, $value, $id = null) {
+		$attr = array(
+				"type"		=> "hidden",
+				"name"		=> $name,
+				"value"		=> $value
+				);
+		if ($id !== null)
+			$attr["id"] = $id;
 
+		return self::tag("input", $attr);
+	}
 
 	static function submitButton($submit) {
 		$name = $submit["name"];
