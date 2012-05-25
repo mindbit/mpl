@@ -106,7 +106,7 @@ class X509 {
 		return $this->data;
 	}
 
-	function glueFields($fields, $glue = ",") {
+	static function glueFields($fields, $glue = ",") {
 		$ret = "";
 		$_glue = "";
 		foreach ($fields as $k => $v) {
