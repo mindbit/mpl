@@ -31,11 +31,14 @@ class PdfTk {
 	}
 
 	static function fdf($data, $encoding = "utf-8") {
-		$ret = "%FDF-1.2\n%" . chr(0xe2) . chr(0xe3) . chr(0xcf) .
-			chr(0xd3) . "\n1 0 obj\n<</FDF<</Fields[";
-		foreach ($data as $t => $v)
-			$ret .= "<</V(" . self::fdfUtf16($v, $encoding) . ")" .
-			"/T(" . self::fdfUtf16($t, $encoding) . ")>>";
+		$search = array('\\', '(', ')');
+		$replace = array('\\\\', '\(', '\)');
+		$ret = "%FDF-1.2\n%" . chr(0xe2) . chr(0xe3) . chr(0xcf) . chr(0xd3) . "\n1 0 obj\n<</FDF<</Fields[";
+		foreach ($data as $t => $v) {
+			$t = str_replace($search, $replace, self::fdfUtf16($t, $encoding));
+			$v = str_replace($search, $replace, self::fdfUtf16($v, $encoding));
+			$ret .= "<</V(" . $v . ")" ."/T(" . $t . ")>>";
+		}
 		$ret .= "]>>>>\nendobj\ntrailer\n<</Root 1 0 R>>\n%%EOF\n";
 		return $ret;
 	}
