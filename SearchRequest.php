@@ -19,6 +19,7 @@
 
 require_once 'BaseRequest.php';
 require_once 'HTTP.php';
+require_once 'Env.php';
 
 abstract class BaseSearchRequest extends BaseRequest {
 	const STATE_FORM = 1;
@@ -97,6 +98,10 @@ abstract class BaseSearchRequest extends BaseRequest {
 					1 + (int)floor($this->offset / $this->limit),
 					$this->limit));
 	}
+	
+	function setCombinedQueryPager($queries) {
+		$this->pager = new MultiplePropelModelPagerAdapter($queries, $this->offset, $this->limit);
+	}
 }
 
 abstract class SearchRequest extends BaseSearchRequest {
@@ -117,11 +122,62 @@ abstract class SearchRequest extends BaseSearchRequest {
 	}
 }
 
+
+abstract class BasePagerAdapter {
+
+	abstract function __construct($pager);
+
+	abstract function getTotalRecordCount();
+
+	abstract function getPage();
+
+	abstract function getTotalPages();
+
+	abstract function getFirstPage();
+
+	abstract function getLastPage();
+
+	abstract function getResult();
+	
+	public function getPrevLinks($range = 5) {
+		$total 	= $this->getTotalPages();
+		$start 	= $this->getPage() - 1;
+		$end 	= $this->getPage() - $range;
+		$first 	= $this->getFirstPage();
+		$links 	= array();
+		for ($i=$start; $i>$end; $i--) {
+			if ($i < $first) {
+					break;
+			}
+			$links[] = $i;
+		}
+
+		return array_reverse($links);
+	}
+
+	public function getNextLinks($range = 5)
+	{
+		$total 	= $this->getTotalPages();
+		$start 	= $this->getPage() + 1;
+		$end 	= $this->getPage() + $range;
+		$last 	= $this->getLastPage();
+		$links 	= array();
+		for ($i=$start; $i<$end; $i++) {
+			if ($i > $last) {
+					break;
+			}
+			$links[] = $i;
+		}
+
+		return $links;
+	}
+} 
+
 /**
- * Encapsulate a PropelModelPager and expose required PropelPager
- * functionality.
- */
-class PropelModelPagerAdapter {
+* Encapsulate a PropelModelPager and expose required PropelPager
+* functionality.
+*/
+class PropelModelPagerAdapter extends BasePagerAdapter {
 	protected $pager;
 
 	function __construct($pager) {
@@ -151,50 +207,103 @@ class PropelModelPagerAdapter {
 	function getResult() {
 		return $this->pager->getResults();
 	}
+}
 
-	/**
-	 * get an array of previous id's
-	 *
-	 * @param      int $range
-	 * @return     array $links
-	 */
-	function getPrevLinks($range = 5) {
-		$total = $this->getTotalPages();
-		$start = $this->getPage() - 1;
-		$end = $this->getPage() - $range;
-		$first =  $this->getFirstPage();
-		$links = array();
-		for ($i=$start; $i>$end; $i--) {
-			if ($i < $first) {
-					break;
-			}
-			$links[] = $i;
+class MultiplePropelModelPagerAdapter extends BasePagerAdapter {
+	protected $pagers = array();
+	protected $pager;
+	protected $offset;
+	protected $limit;
+	
+	function __construct($queries,$offset,$limit) {
+	
+		$this->offset= $offset;
+		$this->limit = $limit;
+		$nr=count($queries);			
+		for($i=0;$i<$nr;$i++) {
+			$this->pagers[$i] = $queries[$i]->paginate(1 + (int)floor($this->offset / $this->limit), $this->limit);	
+			$this->pagers[$i]->peer  = $queries[$i]->getModelPeerName();
+			$this->pagers[$i]->q  = $queries[$i];
 		}
-
-		return array_reverse($links);
 	}
 
-	/**
-	 * get an array of next id's
-	 *
-	 * @param      int $range
-	 * @return     array $links
-	 */
-	public function getNextLinks($range = 5)
-	{
-		$total = $this->getTotalPages();
-		$start = $this->getPage() + 1;
-		$end = $this->getPage() + $range;
-		$last =  $this->getLastPage();
-		$links = array();
-		for ($i=$start; $i<$end; $i++) {
-			if ($i > $last) {
-					break;
+	function getTotalRecordCount() {
+		$total 	= 0;
+		$good	= false;
+		$nr=count($this->pagers);
+		for($i=0;$i<$nr;$i++) {
+			if(!empty($this->pagers[$i])) {
+				//$_SESSION['totalRange'][$i]=$this->pagers[$i]->count();
+				$total+=$this->pagers[$i]->count();
+				$good=true;
 			}
-			$links[] = $i;
 		}
+		if(!$good)	
+			return 0;
+		return $total;
+	}
 
-		return $links;
+	function getPage() {
+		return 1 + (int)floor($this->offset / $this->limit);
+	}
+
+	function getTotalPages() {
+		try {
+			$tp = ceil($this->getTotalRecordCount()/$this->limit);
+		}
+		catch(Exception $e) {
+			$tp=0;
+		}
+		return $tp;
+	}
+
+	function getFirstPage() {
+		return 1;
+	}
+
+	function getLastPage() {
+		$last = 1;
+		foreach($this->pagers as $pg)
+			$last+=$pg->getLastPage();
+		return $last;
+	}
+
+	function getResult() {
+	
+		$nr=count($this->pagers);
+		for($i=0;$i<$nr;$i++) {
+			$pg = $this->pagers[$i];
+			$tb = $pg->peer;
+			
+			if(($this->offset < $pg->count())  && (($this->offset + $this->limit) <= $pg->count())){
+				//sufficient by current;
+				$pg->q->setLimit($this->limit);
+				$pg->q->setOffset($this->offset);
+				$result = $tb::doSelect($pg->q);
+				return $result;
+			}
+			if(($this->offset < $pg->count())  && (($this->offset + $this->limit) >  $pg->count())){
+				//page needs need more: $this->offset+$this->limit -$pg->count() 
+				$pg->q->setLimit($this->limit);
+				$pg->q->setOffset($this->offset);
+				$result = $tb::doSelect($pg->q);
+
+				if(!empty($this->pagers[$i+1])){
+					$fill_peer 	= $this->pagers[$i+1]->peer;
+					$fill_query 	= $this->pagers[$i+1]->q;
+
+					$fill_query->setLimit(($this->offset + $this->limit) - $pg->count());
+					$fill_query->setOffset(0);
+					
+					$fill_result 	= $fill_peer::doSelect($fill_query);
+					$final_result 	= array_merge($result, $fill_result);
+					
+					return $final_result;
+				}	
+				return $result;
+			}
+		}
+		return null;
 	}
 }
 ?>

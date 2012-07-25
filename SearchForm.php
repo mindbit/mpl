@@ -124,6 +124,8 @@ abstract class SearchForm extends BaseForm {
 		echo HTML::link("javascript:searchPage(" . ($cp + 1) . ")", ">", null, $cp < $tp) . "&nbsp;";
 		echo HTML::link("javascript:searchPage(" . $tp . ")", "»", null, $cp < $tp) . " out of <b>" . $tp . "</b>";
 	}
+	
+	
 
 	function displayResultsHeader() {
 		echo '<table width="100%">';
@@ -151,6 +153,7 @@ abstract class SearchForm extends BaseForm {
 		}
 		function searchNew() {
 			document.forms[0].__search_do.value = "0";
+			document.forms[0].__search_offset.value = "0";
 			document.forms[0].submit();
 		}
 		function searchPage(page) {
