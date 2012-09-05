@@ -30,6 +30,8 @@ abstract class BaseAuthRequest extends BaseRequest {
 	const OP_LOGOUT				= 2;
 	const OP_CHECK				= 3;
 
+	const SESSION_USER_KEY		= "user";
+
 	protected $validOperationTypes = array(
 			self::OP_LOGIN,
 			self::OP_LOGOUT,
@@ -55,6 +57,11 @@ abstract class BaseAuthRequest extends BaseRequest {
 	 * Neither user nor credentials were found in request.
 	 */
 	const S_AUTH_REQUIRED		= 4;
+
+	function getSessionUserKey() {
+		$selfReflect = new ReflectionClass($this);
+		return $selfReflect->getConstant("SESSION_USER_KEY");
+	}
 
 	function decode() {
 		if (!isset($_REQUEST["operationType"])) {
@@ -85,8 +92,9 @@ abstract class BaseAuthRequest extends BaseRequest {
 	}
 
 	function doCheck() {
-		if (isset($_SESSION["user"])) {
-			MplSession::setUser($_SESSION["user"]);
+		$key = $this->getSessionUserKey();
+		if (isset($_SESSION[$key])) {
+			MplSession::setUser($_SESSION[$key]);
 			$this->setState(self::S_AUTH_CACHED);
 			return;
 		}
@@ -105,12 +113,12 @@ abstract class BaseAuthRequest extends BaseRequest {
 		}
 
 		MplSession::setUser($user);
-		$_SESSION["user"] = $user;
+		$_SESSION[$this->getSessionUserKey()] = $user;
 		$this->setState(self::S_AUTH_SUCCESS);
 	}
 
 	function doLogout() {
-		unset($_SESSION["user"]);
+		unset($_SESSION[$this->getSessionUserKey()]);
 		$this->setState(self::S_AUTH_REQUIRED);
 	}
 
