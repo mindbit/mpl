@@ -151,7 +151,8 @@ class HTML {
 	static function submitButton($submit) {
 		$name = $submit["name"];
 		$submit["name"] .= "button";
-		$submit["type"] = "submit";
+		if(!isset($submit["type"]))
+			$submit["type"] = "submit";
 		$ret = self::tag("input", $submit) . self::hidden($name, "1");
 		return $ret;
 	}

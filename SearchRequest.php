@@ -94,9 +94,7 @@ abstract class BaseSearchRequest extends BaseRequest {
 	}
 
 	function setQueryPager($query) {
-		$this->pager = new PropelModelPagerAdapter($query->paginate(
-					1 + (int)floor($this->offset / $this->limit),
-					$this->limit));
+		$this->pager = new PropelModelPagerAdapter($query->paginate(1 + (int)floor($this->offset / $this->limit),$this->limit));
 	}
 	
 	function setCombinedQueryPager($queries) {
@@ -147,7 +145,7 @@ abstract class BasePagerAdapter {
 		$links 	= array();
 		for ($i=$start; $i>$end; $i--) {
 			if ($i < $first) {
-					break;
+				break;
 			}
 			$links[] = $i;
 		}
@@ -155,8 +153,7 @@ abstract class BasePagerAdapter {
 		return array_reverse($links);
 	}
 
-	public function getNextLinks($range = 5)
-	{
+	public function getNextLinks($range = 5) {
 		$total 	= $this->getTotalPages();
 		$start 	= $this->getPage() + 1;
 		$end 	= $this->getPage() + $range;
@@ -164,7 +161,7 @@ abstract class BasePagerAdapter {
 		$links 	= array();
 		for ($i=$start; $i<$end; $i++) {
 			if ($i > $last) {
-					break;
+				break;
 			}
 			$links[] = $i;
 		}
@@ -219,7 +216,7 @@ class MultiplePropelModelPagerAdapter extends BasePagerAdapter {
 	
 		$this->offset= $offset;
 		$this->limit = $limit;
-		$nr=count($queries);			
+		$nr=count($queries);
 		for($i=0;$i<$nr;$i++) {
 			$this->pagers[$i] = $queries[$i]->paginate(1 + (int)floor($this->offset / $this->limit), $this->limit);	
 			$this->pagers[$i]->peer  = $queries[$i]->getModelPeerName();
@@ -238,7 +235,7 @@ class MultiplePropelModelPagerAdapter extends BasePagerAdapter {
 				$good=true;
 			}
 		}
-		if(!$good)	
+		if(!$good)
 			return 0;
 		return $total;
 	}

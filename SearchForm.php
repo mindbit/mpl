@@ -149,6 +149,7 @@ abstract class SearchForm extends BaseForm {
 		<script type="text/javascript">
 		function searchChangeRpp() {
 			document.forms[0].__search_limit.value = document.forms[0].__search_rpp.value;
+			document.forms[0].__search_offset.value = "0";
 			document.forms[0].submit();
 		}
 		function searchNew() {
