@@ -61,16 +61,16 @@ class Asn {
 		return array(
 				self::T_BOOLEAN			=> "AsnBoolean",
 				self::T_INTEGER			=> "AsnInteger",
-				self::T_BIT_STR			=> "AsnBitStr",
-				self::T_OCTET_STR		=> "AsnOctetStr",
+				self::T_BIT_STR			=> "AsnBitString",
+				self::T_OCTET_STR		=> "AsnOctetString",
 				self::T_NULL			=> "AsnNull",
 				self::T_OBJECT_ID		=> "AsnObjectId",
 				self::T_REAL			=> "AsnReal",
 				self::T_ENUMERATED		=> "AsnEnumerated",
 				self::T_UTF8_STRING		=> "AsnUTF8String",
 				self::T_RELATIVE_OID	=> "AsnRelativeOid",
-				self::T_PRINT_STR		=> "AsnPrintStr",
-				self::T_IA5_STR			=> "AsnIa5Str",
+				self::T_PRINT_STR		=> "AsnPrintString",
+				self::T_IA5_STR			=> "AsnIa5String",
 				self::T_UTC_TIME		=> "AsnUtcTime",
 				self::T_GENERAL_TIME	=> "AsnGeneralTime",
 				self::T_SEQUENCE		=> "AsnSequence",
@@ -132,7 +132,7 @@ class AsnInteger extends AsnBase {
 	}
 }
 
-class AsnOctetStr extends AsnBase {
+class AsnOctetString extends AsnBase {
 }
 
 class AsnNull extends AsnBase {
@@ -193,10 +193,10 @@ class AsnReal extends AsnBase {
 class AsnRelativeOid extends AsnBase {
 }
 
-class AsnPrintStr extends AsnBase {
+class AsnPrintString extends AsnBase {
 }
 
-class AsnIa5Str extends AsnBase {
+class AsnIa5String extends AsnBase {
 }
 
 class AsnUtcTime extends AsnBase {
@@ -288,7 +288,7 @@ class AsnSequenceIndex extends AsnSequence {
 	}
 }
 
-class AsnBitStr extends AsnBase {
+class AsnBitString extends AsnBase {
 }
 
 class AsnUTF8String extends AsnBase {
