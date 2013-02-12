@@ -117,6 +117,9 @@ class AsnUnknown extends AsnBase {
 	}
 }
 
+class AsnUnparseable extends AsnBase {
+}
+
 class AsnBoolean extends AsnBase {
 	function parse($string) {
 		$this->data = (bool)$string;
@@ -207,33 +210,51 @@ class AsnSequence extends AsnBase implements IteratorAggregate, ArrayAccess {
 		//echo get_class($this) . " parsing: " ; var_dump($string);
 		$this->data = array();
 		$endLength = strlen($string);
-		$bigLength = $length = $type = $dtype = $p = 0;
+		$p = 0;
 		while ($p < $endLength) {
+			// decode object type
+			$start = $p;
 			$type = ord($string[$p++]);
-			$dtype = ($type & 192) >> 6;
 			if ($type == 0)
 				continue;
 
+			// decode object length
 			$length = ord($string[$p++]);
 			if ($length & Asn::M_LONG_LEN) {
+				$length &= Asn::M_LONG_LEN - 1;
 				$tempLength = 0;
-				for ($x = 0; $x < ($length & (Asn::M_LONG_LEN - 1)); $x++)
+				if ($p + $length > $endLength)
+					break;
+				while ($length--)
 					$tempLength = ord($string[$p++]) + ($tempLength * 256);
 				$length = $tempLength;
 			}
+
+			// decode object contents
+			if ($p + $length > $endLength)
+				break;
 			switch ($type & Asn::CLASS_MASK) {
 			case Asn::C_UNIVERSAL:
 				$obj = Asn::newInstance($type);
-				$obj->parse(substr($string, $p, $length));
 				break;
 			case Asn::C_CONTEXT:
 				// FIXME we should check that bit 5 of $type is set
 				$obj = new AsnSequenceIndex($type & Asn::TAG_MASK);
-				$obj->parse(substr($string, $p, $length));
 				break;
+			default:
+				$obj = new AsnUnknown($type);
 			}
+			$obj->parse(substr($string, $p, $length));
 			$this->data[] = $obj;
 			$p = $p + $length;
+			$length = 0;
+		}
+
+		if ($length) {
+			// we forcedly exited the loop
+			$obj = new AsnUnparseable();
+			$obj->parse(substr($string, $start, $endLength - $start));
+			$this->data[] = $obj;
 		}
 	}
 
