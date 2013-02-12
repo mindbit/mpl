@@ -22,20 +22,20 @@
  */
 
 class Asn {
-	// markers
-	const M_UNIVERSAL		= 0x00;
-	const M_APPLICATION		= 0x40;
-	const M_CONTEXT			= 0x80;
-	const M_PRIVATE			= 0xC0;
+	// Tag classes (bits 7 and 6)
+	const CLASS_MASK		= 0xC0;
+	const C_UNIVERSAL		= 0x00;
+	const C_APPLICATION		= 0x40;
+	const C_CONTEXT			= 0x80;
+	const C_PRIVATE			= 0xC0;
 
-	const M_PRIMITIVE		= 0x00;
-	const M_CONSTRUCTOR		= 0x20;
+	// Encoding type (bit 5)
+	const FORM_MASK			= 0x20;
+	const F_PRIMITIVE		= 0x00;
+	const F_CONSTRUCTED		= 0x20;
 
-	const M_LONG_LEN		= 0x80;
-	const M_EXTENSION_ID	= 0x1F;
-	const M_BIT				= 0x80;
-
-	// types
+	// Universal tags
+	const TAG_MASK			= 0x1F;
 	const T_BOOLEAN			= 1;
 	const T_INTEGER			= 2;
 	const T_BIT_STR			= 3;
@@ -44,6 +44,7 @@ class Asn {
 	const T_OBJECT_ID		= 6;
 	const T_REAL			= 9;
 	const T_ENUMERATED		= 10;
+	const T_UTF8_STRING		= 12;
 	const T_RELATIVE_OID	= 13;
 	const T_PRINT_STR		= 19;
 	const T_IA5_STR			= 22;
@@ -51,6 +52,10 @@ class Asn {
 	const T_GENERAL_TIME	= 24;
 	const T_SEQUENCE		= 48;
 	const T_SET				= 49;
+
+	// Length encoding
+	const M_LONG_LEN		= 0x80;
+	const M_BIT				= 0x80;
 
 	static function getClassMap() {
 		return array(
@@ -62,6 +67,7 @@ class Asn {
 				self::T_OBJECT_ID		=> "AsnObjectId",
 				self::T_REAL			=> "AsnReal",
 				self::T_ENUMERATED		=> "AsnEnumerated",
+				self::T_UTF8_STRING		=> "AsnUTF8String",
 				self::T_RELATIVE_OID	=> "AsnRelativeOid",
 				self::T_PRINT_STR		=> "AsnPrintStr",
 				self::T_IA5_STR			=> "AsnIa5Str",
@@ -74,6 +80,8 @@ class Asn {
 
 	static function newInstance($type) {
 		$classMap = self::getClassMap();
+		if (!isset($classMap[$type]))
+			return new AsnUnknown($type);
 		$class = $classMap[$type];
 		return new $class;
 	}
@@ -92,7 +100,21 @@ abstract class AsnBase {
 		return $this->data;
 	}
 
-	abstract function parse($string);
+	function parse($string) {
+		$this->data = $string;
+	}
+}
+
+class AsnUnknown extends AsnBase {
+	protected $type;
+
+	function __construct($type) {
+		$this->type = $type;
+	}
+
+	function getType() {
+		return $this->type;
+	}
 }
 
 class AsnBoolean extends AsnBase {
@@ -102,15 +124,12 @@ class AsnBoolean extends AsnBase {
 }
 
 class AsnInteger extends AsnBase {
-	function parse($string) {
-		$this->data = strtr(base64_encode($string),'+/','-_');
+	function getBase64() {
+		return base64_encode($this->data);
 	}
 }
 
 class AsnOctetStr extends AsnBase {
-	function parse($string) {
-		$this->data = $string;
-	}
 }
 
 class AsnNull extends AsnBase {
@@ -166,39 +185,21 @@ class AsnObjectId extends AsnBase {
 }
 
 class AsnReal extends AsnBase {
-	function parse($string) {
-		$this->data = $string;
-	}
 }
 
 class AsnRelativeOid extends AsnBase {
-	function parse($string) {
-		$this->data = $string;
-	}
 }
 
 class AsnPrintStr extends AsnBase {
-	function parse($string) {
-		$this->data = $string;
-	}
 }
 
 class AsnIa5Str extends AsnBase {
-	function parse($string) {
-		$this->data = $string;
-	}
 }
 
 class AsnUtcTime extends AsnBase {
-	function parse($string) {
-		$this->data = $string;
-	}
 }
 
 class AsnGeneralTime extends AsnBase {
-	function parse($string) {
-		$this->data = $string;
-	}
 }
 
 class AsnSequence extends AsnBase implements IteratorAggregate, ArrayAccess {
@@ -220,8 +221,17 @@ class AsnSequence extends AsnBase implements IteratorAggregate, ArrayAccess {
 					$tempLength = ord($string[$p++]) + ($tempLength * 256);
 				$length = $tempLength;
 			}
-			$obj = Asn::newInstance($type);
-			$obj->parse(substr($string, $p, $length));
+			switch ($type & Asn::CLASS_MASK) {
+			case Asn::C_UNIVERSAL:
+				$obj = Asn::newInstance($type);
+				$obj->parse(substr($string, $p, $length));
+				break;
+			case Asn::C_CONTEXT:
+				// FIXME we should check that bit 5 of $type is set
+				$obj = new AsnSequenceIndex($type & Asn::TAG_MASK);
+				$obj->parse(substr($string, $p, $length));
+				break;
+			}
 			$this->data[] = $obj;
 			$p = $p + $length;
 		}
@@ -249,7 +259,18 @@ class AsnSequence extends AsnBase implements IteratorAggregate, ArrayAccess {
 	}
 }
 
+class AsnSequenceIndex extends AsnSequence {
+	protected $index;
+
+	function __construct($index) {
+		$this->index = $index;
+	}
+}
+
 class AsnBitStr extends AsnSequence {
+}
+
+class AsnUTF8String extends AsnBase {
 }
 
 class AsnEnumerated extends AsnSequence {
