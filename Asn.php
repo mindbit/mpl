@@ -288,7 +288,7 @@ class AsnSequenceIndex extends AsnSequence {
 	}
 }
 
-class AsnBitStr extends AsnSequence {
+class AsnBitStr extends AsnBase {
 }
 
 class AsnUTF8String extends AsnBase {
