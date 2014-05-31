@@ -256,7 +256,7 @@ class GenericErrorHandler extends AbstractErrorHandler {
 	}
 
 	function log($message) {
-		Env::log($message);
+		MPL::log($message);
 	}
 
 	function logFormatted($message) {

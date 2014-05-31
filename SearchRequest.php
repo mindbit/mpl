@@ -1,4 +1,4 @@
-<?
+<?php
 /*
  * Mindbit PHP Library
  * Copyright (C) 2009 Mindbit SRL
@@ -19,7 +19,6 @@
 
 require_once 'BaseRequest.php';
 require_once 'HTTP.php';
-require_once 'Env.php';
 
 abstract class BaseSearchRequest extends BaseRequest {
 	const STATE_FORM = 1;

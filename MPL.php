@@ -1,4 +1,4 @@
-<?
+<?php
 /*
  * Mindbit PHP Library
  * Copyright (C) 2009 Mindbit SRL
@@ -17,10 +17,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-require_once("ErrorHandler.php");
-require_once("GenericErrorHandler.php");
+require_once 'ErrorHandler.php';
+require_once 'GenericErrorHandler.php';
 
-class Env {
+class MPL {
 	static $logger;
 
 	static function get($constant, $default = null) {
@@ -37,12 +37,12 @@ class Env {
 
 	static function setup() {
 		ErrorHandler::setHandler(new GenericErrorHandler());
-		ErrorHandler::setMask(Env::get("MPL_ERROR_MASK", E_NONE));
+		ErrorHandler::setMask(self::get("MPL_ERROR_MASK", E_NONE));
 
 		// install custom error handlers
 		set_error_handler(array("ErrorHandler", "handleError"));
 		set_exception_handler(array("ErrorHandler", "handleException"));
-		// Env::setAssertOptions();
+		// self::setAssertOptions();
 	}
 
 	static function setLogger($logger) {
@@ -67,4 +67,3 @@ class Env {
 	}
 }
 
-?>
