@@ -51,7 +51,12 @@ class ErrorHandler {
 	}
 
 	static function handleError($code, $desc, $filename = null, $line = null, $context = null) {
-		return self::$handlerInstance->handleError($code, $desc, $filename, $line, $context);
+		// NOTE: When custom error handling is enabled using the
+		//       set_error_handler() function, errors are no longer
+		//       filtered automatically by PHP.
+		return (error_reporting() & $code) ?
+			self::$handlerInstance->handleError($code, $desc, $filename, $line, $context) :
+			true;
 	}
 
 	static function handleException($exception) {
