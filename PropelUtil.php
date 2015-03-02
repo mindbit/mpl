@@ -62,5 +62,13 @@ class PropelUtil {
 		$om = (array)$om;
 		return $om[self::PROTECTED_MAGIC . $pk];
 	}
+
+	static function translateFieldNames($om, $fields, $fromType, $toType) {
+		$ret = array();
+		$omPeer = $om->getPeer();
+		foreach ($fields as $fieldname)
+			$ret[] = $omPeer->translateFieldName($fieldname, $fromType, $toType);
+		return $ret;
+	}
 }
 ?>

@@ -92,7 +92,7 @@ abstract class OmRequest extends BaseRequest {
 			$data = $this->data;
 		$tableMap = $this->omPeer->getTableMap();
 		$ret = array();
-		foreach ($this->omFieldNames as $field) {
+		foreach ($this->arrayToOmFieldNames() as $field) {
 			if (!isset($data[$field]))
 				continue;
 			$column = $tableMap->getColumn($field);
@@ -104,6 +104,10 @@ abstract class OmRequest extends BaseRequest {
 			$ret[$field] = $value;
 		}
 		return $ret;
+	}
+
+	protected function arrayToOmFieldNames() {
+		return $this->omFieldNames;
 	}
 
 	protected function validate() {
