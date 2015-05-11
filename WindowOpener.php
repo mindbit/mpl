@@ -1,4 +1,4 @@
-<?
+<?php
 /*
  * Mindbit PHP Library
  * Copyright (C) 2009 Mindbit SRL
@@ -22,7 +22,7 @@ class BaseWindowOpener {
 	function getWidth() {
 		return 600;
 	}
-	
+
 	function getHeight() {
 		return 400;
 	}
@@ -59,7 +59,7 @@ class BaseWindowOpener {
 					"height=<?= $this->getHeight()?>," +
 					"scrollbars=<?= $this->getScrollbars() ? "yes" : "no"?>");
 		}
-		<?
+		<?php
 	}
 
 	function __javaScriptNew($fn, $link, $obj, $arg) {
@@ -81,7 +81,7 @@ class BaseWindowOpener {
 					"height=<?= $this->getHeight()?>," +
 					"scrollbars=<?= $this->getScrollbars() ? "yes" : "no"?>");
 		}
-		<?
+		<?php
 	}
 
 	function javaScriptOpen($link, $objName) {
@@ -199,4 +199,3 @@ abstract class WindowOpener extends BaseWindowOpener {
 		return "javascript:" . $this->__fnNew() . "('" . $append . "')";
 	}
 }
-?>

@@ -1,4 +1,4 @@
-<?
+<?php
 /*
  * Mindbit PHP Library
  * Copyright (C) 2009 Mindbit SRL
@@ -383,5 +383,3 @@ class Cidr4 extends IPv4Addr {
 
 class Cidr6 extends IPv6Addr {
 }
-
-?>

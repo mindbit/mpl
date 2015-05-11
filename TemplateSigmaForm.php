@@ -42,5 +42,3 @@ abstract class TemplateSigmaForm extends RequestDispatcher {
 
     public abstract function parse();
 }
-
-// vim: ts=4 sw=4 et

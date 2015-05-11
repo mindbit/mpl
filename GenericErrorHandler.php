@@ -1,4 +1,4 @@
-<?
+<?php
 /*
  * Mindbit PHP Library
  * Copyright (C) 2009 Mindbit SRL
@@ -100,7 +100,7 @@ class GenericErrorHandler extends AbstractErrorHandler {
 			<tr>
 			<th bgcolor="black" colspan="2"><font color="white">Error</th></th>
 			</tr>
-			<?
+			<?php
 			break;
 		case self::DISPLAY_FORMAT_TEXT:
 			echo AsciiTable::renderRowSeparator(array(EXC_TABLE_WIDTH + 3));
@@ -141,7 +141,7 @@ class GenericErrorHandler extends AbstractErrorHandler {
 				<td bgcolor="white"><b>Context</b></td>
 				<td bgcolor="white"><pre><?= htmlentities($data["dumpedContext"])?></pre></td>
 			</tr>
-			<?
+			<?php
 			break;
 		case self::DISPLAY_FORMAT_TEXT:
 			echo AsciiTable::renderCells(
@@ -184,7 +184,7 @@ class GenericErrorHandler extends AbstractErrorHandler {
 			?>
 			</center>
 			</table>
-			<?
+			<?php
 			break;
 		}
 	}
@@ -325,5 +325,3 @@ class GenericErrorHandler extends AbstractErrorHandler {
 	}
 	*/
 }
-
-?>

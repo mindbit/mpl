@@ -1,4 +1,4 @@
-<?
+<?php
 /*
  * Mindbit PHP Library
  * Copyright (C) 2009 Mindbit SRL
@@ -31,5 +31,3 @@ class ThrowErrorHandler extends GenericErrorHandler {
 		throw new ErrorException($data["description"], $data["code"], 0, $data["filename"], $data["line"]);
 	}
 }
-
-?>

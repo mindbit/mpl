@@ -1,4 +1,4 @@
-<?
+<?php
 /*
  * Mindbit PHP Library
  * Copyright (C) 2009 Mindbit SRL
@@ -82,7 +82,7 @@ abstract class SimpleForm extends BaseForm {
 			parentForm.submit();
 		}
 		</script>
-		<?
+		<?php
 	}
 
 	function selfClose() {
@@ -90,7 +90,7 @@ abstract class SimpleForm extends BaseForm {
 		<script type="text/javascript">
 		self.close();
 		</script>
-		<?
+		<?php
 	}
 
 	function refreshTags() {
@@ -121,5 +121,3 @@ abstract class SimpleForm extends BaseForm {
 		return $this->onSuccessfulOperation(OmRequest::OPERATION_REMOVE, $action);
 	}
 }
-
-?>

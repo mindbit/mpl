@@ -1,4 +1,4 @@
-<?
+<?php
 /*
  * Mindbit PHP Library
  * Copyright (C) 2009 Mindbit SRL
@@ -45,4 +45,3 @@ class HTTP {
 		return $hdr . file_get_contents('php://input');
 	}
 }
-?>

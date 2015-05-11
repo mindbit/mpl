@@ -1,4 +1,4 @@
-<?
+<?php
 /*
  * Mindbit PHP Library
  * Copyright (C) 2009 Mindbit SRL
@@ -41,5 +41,3 @@ if (PHP_VERSION_ID < 50207) {
 	define('PHP_MINOR_VERSION',   $version[1]);
 	define('PHP_RELEASE_VERSION', $version[2]);
 }
-
-?>

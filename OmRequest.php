@@ -1,4 +1,4 @@
-<?
+<?php
 /*
  * Mindbit PHP Library
  * Copyright (C) 2009 Mindbit SRL
@@ -177,5 +177,3 @@ abstract class OmRequest extends BaseRequest {
 		}
 	}
 }
-
-?>

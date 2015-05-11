@@ -1,4 +1,4 @@
-<?
+<?php
 /*
  * Mindbit PHP Library
  * Copyright (C) 2009 Mindbit SRL
@@ -125,5 +125,3 @@ abstract class SimpleFormRequest extends OmRequest {
 		$this->err[] = $e->getMessage();
 	}
 }
-
-?>

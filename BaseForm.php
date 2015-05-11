@@ -1,4 +1,4 @@
-<?
+<?php
 /*
  * Mindbit PHP Library
  * Copyright (C) 2009 Mindbit SRL
@@ -92,13 +92,13 @@ abstract class BaseForm extends RequestDispatcher {
 		?>
 		<html>
 		<head>
-		<? $this->head(); ?>
+		<?php $this->head(); ?>
 		</head>
 		<body>
-		<? $this->body(); ?>
+		<?php $this->body(); ?>
 		</body>
 		</html>
-		<?
+		<?php
 	}
 
 	function head() {
@@ -110,7 +110,7 @@ abstract class BaseForm extends RequestDispatcher {
 	function title() {
 	?>
 	<title><?= $this->getTitle()?></title>
-	<?
+	<?php
 	}
 
 	function css() {
@@ -144,4 +144,3 @@ abstract class BaseForm extends RequestDispatcher {
 					), true);
 	}
 }
-?>

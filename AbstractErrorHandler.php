@@ -1,4 +1,4 @@
-<?
+<?php
 /*
  * Mindbit PHP Library
  * Copyright (C) 2009 Mindbit SRL
@@ -413,5 +413,3 @@ define("E_PHPINTERNAL",	E_ERROR | E_PARSE | E_CORE_ERROR | E_CORE_WARNING |
 		E_COMPILE_ERROR | E_COMPILE_WARNING);
 define("E_NONE", 		0);
 define("E_UNHANDLED_EXCEPTION", 0x10000);
-
-?>

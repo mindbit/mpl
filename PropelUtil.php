@@ -1,4 +1,4 @@
-<?
+<?php
 /*
  * Mindbit PHP Library
  * Copyright (C) 2009 Mindbit SRL
@@ -63,4 +63,3 @@ class PropelUtil {
 		return $om[self::PROTECTED_MAGIC . $pk];
 	}
 }
-?>

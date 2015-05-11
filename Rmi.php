@@ -1,4 +1,4 @@
-<?
+<?php
 require_once "ThrowErrorHandler.php";
 
 class RmiMessageHeader {
@@ -386,4 +386,3 @@ class RmiServerErrorHandler extends ThrowErrorHandler {
 		$msg->write(RmiServer::getInstance()->getStreamOut());
 	}
 }
-?>

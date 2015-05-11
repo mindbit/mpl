@@ -1,4 +1,4 @@
-<?
+<?php
 /*
  * Mindbit PHP Library
  * Copyright (C) 2009 Mindbit SRL
@@ -80,7 +80,7 @@ abstract class SearchForm extends BaseForm {
 		?>
 		No results match your search criteria.<br>
 		<input type="button" value="New Search" onClick="searchNew()">
-		<?
+		<?php
 	}
 
 	function displayNavBarTop() {
@@ -88,12 +88,12 @@ abstract class SearchForm extends BaseForm {
 		<table width="100%">
 		<tr>
 			<td width="33%">Results <b><?= $this->offset + 1?></b> - <b><?= min($this->offset + $this->limit, $this->pager->getTotalRecordCount())?></b> out of <b><?= $this->pager->getTotalRecordCount()?></b></td>
-			<td align="center"><? $this->displayPageList(); ?></td>
+			<td align="center"><?php $this->displayPageList(); ?></td>
 			<td width="33%" align="right">Results/page <?= HTML::select("__search_rpp", $this->limit, $this->getRppOptions(), false, null, array("onChange" => "searchChangeRpp()"))?></td>
 		</tr>
 		</table>
 		<hr width="100%">
-		<?
+		<?php
 	}
 
 	function displayNavBarBottom() {
@@ -102,11 +102,11 @@ abstract class SearchForm extends BaseForm {
 		<table width="100%">
 		<tr>
 			<td width="33%"><input type="button" value="New Search" onClick="searchNew()"></td>
-			<td align="center"><? $this->displayPageList(); ?></td>
+			<td align="center"><?php $this->displayPageList(); ?></td>
 			<td width="33%" align="right"><input type="button" value="Next Page" <?= $this->pager->getPage() < $this->pager->getTotalPages() ? "" : "disabled"?> onClick="searchPage(<?= $this->pager->getPage() + 1?>)"></td>
 		</tr>
 		</table>
-		<?
+		<?php
 	}
 
 	function displayPageList() {
@@ -162,8 +162,6 @@ abstract class SearchForm extends BaseForm {
 			document.forms[0].submit();
 		}
 		</script>
-		<?
+		<?php
 	}
 }
-
-?>

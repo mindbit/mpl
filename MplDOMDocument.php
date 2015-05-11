@@ -1,4 +1,4 @@
-<?
+<?php
 require_once "ThrowErrorHandler.php";
 
 class MplDOMDocument extends DOMDocument {
@@ -16,5 +16,3 @@ class MplDOMDocument extends DOMDocument {
 		return $ret;
 	}
 }
-
-?>

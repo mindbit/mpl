@@ -1,4 +1,4 @@
-<?
+<?php
 /*
  * Mindbit PHP Library
  * Copyright (C) 2009 Mindbit SRL
@@ -144,5 +144,3 @@ abstract class BaseAuthRequest extends BaseRequest {
 	 */
 	abstract function authenticateUser($username, $password);
 }
-
-?>

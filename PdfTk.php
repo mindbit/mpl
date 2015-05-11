@@ -1,4 +1,4 @@
-<?
+<?php
 /*
  * Mindbit PHP Library
  * Copyright (C) 2009 Mindbit SRL
@@ -70,5 +70,3 @@ class PdfTk {
 		return proc_close($process);
 	}
 }
-
-?>

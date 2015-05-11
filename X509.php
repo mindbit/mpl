@@ -1,4 +1,4 @@
-<?
+<?php
 /*
  * Mindbit PHP Library
  * Copyright (C) 2009 Mindbit SRL
@@ -300,5 +300,3 @@ class EtsiQcOid {
 				);
 	}
 }
-
-?>

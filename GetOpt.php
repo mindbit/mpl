@@ -1,4 +1,4 @@
-<?
+<?php
 
 class GetOpt {
 	const S_PC_OPT			= 0;
@@ -140,5 +140,3 @@ class GetOpt {
 		return $ret;
 	}
 }
-
-?>
