@@ -1,0 +1,18 @@
+{
+    "name": "mindbit/mpl",
+	"description": "A very lightweight PHP framework based on the Propel ORM",
+    "license": "LGPL-2.1",
+    "authors": [
+        {
+            "name": "Radu Rendec",
+            "email": "radu.rendec@mindbit.ro",
+            "role": "Lead"
+        }
+    ],
+	"require": {
+		"php": "~5.4"
+    },
+    "autoload": {
+        "psr-4": {"Mindbit\\Mpl\\": "src/"}
+    }
+}
