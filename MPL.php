@@ -40,7 +40,7 @@ class MPL {
         ErrorHandler::setMask(self::get("MPL_ERROR_MASK", E_NONE));
 
         // install custom error handlers
-        set_error_handler(array("ErrorHandler", "handleError"));
+        set_error_handler(array("ErrorHandler", "handleError"), E_ALL);
         set_exception_handler(array("ErrorHandler", "handleException"));
         // self::setAssertOptions();
     }

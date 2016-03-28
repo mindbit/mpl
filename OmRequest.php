@@ -82,26 +82,32 @@ abstract class OmRequest extends BaseRequest {
 			 */
 			if (is_resource($val) && $column->isLob())
 				$val = stream_get_contents($val);
-			$ret[$field] = $val === NULL? "" : $val;
+			$ret[$field] = $val === null ? '' : $val;
 		}
 		return $ret;
 	}
 
-	protected function arrayToOm() {
+	protected function arrayToOm($data = null) {
+		if ($data === null)
+			$data = $this->data;
 		$tableMap = $this->omPeer->getTableMap();
 		$ret = array();
-		foreach ($this->omFieldNames as $field) {
-			if (!isset($this->data[$field]))
+		foreach ($this->arrayToOmFieldNames() as $field) {
+			if (!isset($data[$field]))
 				continue;
 			$column = $tableMap->getColumn($field);
-			$value = $this->data[$field];
-			/* For text and numeric columns that can be null we translate "" to NULL. */
-			if ($this->data[$field] === "" && ($column->isText() || $column->isNumeric()) &&
+			$value = $data[$field];
+			// For text and numeric columns that can be null we translate '' to null.
+			if ($data[$field] === '' && ($column->isText() || $column->isNumeric()) &&
 					!$column->isNotNull())
-				$value = NULL;
+				$value = null;
 			$ret[$field] = $value;
 		}
 		return $ret;
+	}
+
+	protected function arrayToOmFieldNames() {
+		return $this->omFieldNames;
 	}
 
 	protected function validate() {
@@ -169,6 +175,16 @@ abstract class OmRequest extends BaseRequest {
 			break;
 		case self::OPERATION_UPDATE:
 		case self::OPERATION_ADD:
+			// NOTE: doSave() is called for both operations, but doSave()
+			//       calls $this->om->setNew(false) when the operation is
+			//       self::OPERATION_UPDATE.
+			//
+			//       Later, the doSave() method inside the propel
+			//       BaseObject class decides whether it does an INSERT
+			//       or an UPDATE based on the 'new' flag.
+			//
+			//       The default value of the 'new' flag is true (set as
+			//       part of the BaseObject class definition).
 			$this->doSave();
 			break;
 		case self::OPERATION_REMOVE:
