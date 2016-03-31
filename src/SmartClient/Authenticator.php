@@ -17,10 +17,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-require_once 'SmartClientRPCResponse.php';
-require_once 'RequestDispatcher.php';
+require_once 'RPCResponse.php';
+require_once '../Mvc/View/RequestDispatcher.php';
 
-abstract class SmartClientAuthenticator extends RequestDispatcher {
+abstract class Authenticator extends RequestDispatcher {
 	/**
 	 * Build an associative array of data that will be passed to the
 	 * SmartClient application.
@@ -32,25 +32,25 @@ abstract class SmartClientAuthenticator extends RequestDispatcher {
 	}
 
 	function write() {
-		$r = new SmartClientRPCResponse();
+		$r = new RPCResponse();
 
 		switch ($this->request->getState()) {
 		case BaseAuthRequest::S_AUTH_REQUIRED:
-			$r->status = SmartClientRPCResponse::STATUS_LOGIN_REQUIRED;
+			$r->status = RPCResponse::STATUS_LOGIN_REQUIRED;
 			break;
 		case BaseAuthRequest::S_AUTH_FAILED:
-			$r->status = SmartClientRPCResponse::STATUS_LOGIN_INCORRECT;
+			$r->status = RPCResponse::STATUS_LOGIN_INCORRECT;
 			break;
 		case BaseAuthRequest::S_AUTH_SUCCESS:
-			$r->status = SmartClientRPCResponse::STATUS_LOGIN_SUCCESS;
+			$r->status = RPCResponse::STATUS_LOGIN_SUCCESS;
 			$r->session = $this->getSessionData();
 			break;
 		case BaseAuthRequest::S_AUTH_CACHED:
-			$r->status = SmartClientRPCResponse::STATUS_SUCCESS;
+			$r->status = RPCResponse::STATUS_SUCCESS;
 			$r->session = $this->getSessionData();
 			break;
 		default:
-			$r->status = SmartClientRPCResponse::STATUS_FAILURE;
+			$r->status = RPCResponse::STATUS_FAILURE;
 		}
 
 		echo $r->jsonEncode();

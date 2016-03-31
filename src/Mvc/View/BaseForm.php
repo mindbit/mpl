@@ -17,9 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-require_once "OmRequest.php";
+require_once "../Controller/OmRequest.php";
 require_once "RequestDispatcher.php";
-require_once "HTML.php";
+require_once "../../Util/HTML.php";
 
 abstract class BaseForm extends RequestDispatcher {
 	// constants for coding various doctypes

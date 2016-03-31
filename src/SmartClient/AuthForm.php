@@ -17,12 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-require_once "BaseForm.php";
+require_once "../Mvc/View/BaseForm.php";
 
 /**
  * Protect a DataSource server from being accessed without authentication.
  */
-abstract class SmartClientAuthForm extends BaseForm {
+abstract class AuthForm extends BaseForm {
 	function write() {
 		switch ($this->request->getState()) {
 		case BaseAuthRequest::S_AUTH_CACHED:

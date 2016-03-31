@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-require_once "BaseForm.php";
+require_once "../Mvc/View/BaseForm.php";
 
 abstract class SearchForm extends BaseForm {
 	protected $pager;

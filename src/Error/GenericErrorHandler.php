@@ -18,8 +18,8 @@
  */
 
 require_once 'AbstractErrorHandler.php';
-require_once 'AsciiTable.php';
-require_once 'Version.php';
+require_once '../Util/AsciiTable.php';
+require_once '../Deprecated/Version.php';
 
 define("EXC_TABLE_WIDTH",    72);
 define("EXC_LEFT_WIDTH",     25);

@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-require_once "BaseRequest.php";
-require_once "MplSession.php";
+require_once "../Mvc/Controller/BaseRequest.php";
+require_once "../Session/Session.php";
 
 /**
  * Generic implementation of user authentication using PHP sessions.
@@ -74,7 +74,7 @@ abstract class BaseAuthRequest extends BaseRequest {
 	}
 
 	function dispatch() {
-		//MplSession::setLocale();
+		//Session::setLocale();
 		session_start();
 
 		$this->decode();
@@ -94,7 +94,7 @@ abstract class BaseAuthRequest extends BaseRequest {
 	function doCheck() {
 		$key = $this->getSessionUserKey();
 		if (isset($_SESSION[$key])) {
-			MplSession::setUser($_SESSION[$key]);
+			Session::setUser($_SESSION[$key]);
 			$this->setState(self::S_AUTH_CACHED);
 			return;
 		}
@@ -112,7 +112,7 @@ abstract class BaseAuthRequest extends BaseRequest {
 			return;
 		}
 
-		MplSession::setUser($user);
+		Session::setUser($user);
 		$_SESSION[$this->getSessionUserKey()] = $user;
 		$this->setState(self::S_AUTH_SUCCESS);
 	}

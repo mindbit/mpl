@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-class PropelUtil {
+class Propel {
 	const PROTECTED_MAGIC = "\000*\000";
 
 	static function getOmPkey($om) {

@@ -18,7 +18,7 @@
  */
 
 require_once "BaseForm.php";
-require_once "Locale.php";
+require_once "../../Locale/Locale.php";
 
 abstract class SimpleForm extends BaseForm {
 	const ACTION_SELF_CLOSE		= 0x01;

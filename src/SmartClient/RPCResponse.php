@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-class SmartClientRPCResponse {
+class RPCResponse {
 	const STATUS_SUCCESS = 0;
 
 	const STATUS_FAILURE = -1;

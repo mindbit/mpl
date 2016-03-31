@@ -18,7 +18,7 @@
  */
 
 require_once 'BaseRequest.php';
-require_once 'PropelUtil.php';
+require_once '../../Util/Propel.php';
 
 abstract class OmRequest extends BaseRequest {
 	const OPERATION_FETCH  = 1;
@@ -72,7 +72,7 @@ abstract class OmRequest extends BaseRequest {
 		$om = (array)$om;
 		$tableMap = $this->omPeer->getTableMap();
 		foreach ($this->omFieldNames as $field) {
-			$val = $om[PropelUtil::PROTECTED_MAGIC . $field];
+			$val = $om[Propel::PROTECTED_MAGIC . $field];
 			$column = $tableMap->getColumn($field);
 			/* Blob columns are read by propel into a memory buffer and
 			   are returned to the user as a resource of type stream.

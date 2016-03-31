@@ -1,5 +1,5 @@
 <?php
-require_once "ThrowErrorHandler.php";
+require_once "../Error/ThrowErrorHandler.php";
 
 class MplDOMDocument extends DOMDocument {
 	function load($filename, $options = 0) {

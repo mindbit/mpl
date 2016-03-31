@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-require_once 'ErrorHandler.php';
-require_once 'GenericErrorHandler.php';
+require_once 'Error/ErrorHandler.php';
+require_once 'Error/GenericErrorHandler.php';
 
 class MPL {
     static $logger;

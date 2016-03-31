@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-require_once 'RequestDispatcher.php';
+require_once '../Mvc/View/RequestDispatcher.php';
 require_once 'HTML/Template/Sigma.php';
 
 abstract class TemplateSigmaForm extends RequestDispatcher {

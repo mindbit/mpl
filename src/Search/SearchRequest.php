@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-require_once 'BaseRequest.php';
-require_once 'HTTP.php';
+require_once '../Mvc/Controller/BaseRequest.php';
+require_once '../Util/HTTP.php';
 
 abstract class BaseSearchRequest extends BaseRequest {
 	const STATE_FORM = 1;
