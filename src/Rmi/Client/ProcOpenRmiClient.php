@@ -1,4 +1,9 @@
 <?php
+
+namespace Mindbit\Mpl\Rmi\Client;
+
+use Mindbit\Mpl\Rmi\Client\RmiClient;
+
 class ProcOpenRmiClient extends RmiClient {
     protected $process;
     protected $streamErr;

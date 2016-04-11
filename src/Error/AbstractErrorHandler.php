@@ -17,6 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+
+namespace Mindbit\Mpl\Error;
+
 /**
  * Base class for custom error handlers.
  */

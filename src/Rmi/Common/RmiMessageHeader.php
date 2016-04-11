@@ -1,4 +1,7 @@
 <?php
+
+namespace Mindbit\Mpl\Rmi\Common;
+
 class RmiMessageHeader {
     protected $version = 1;
     protected $dataLength;

@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+namespace Mindbit\Mpl\Util;
+
 class AsciiTable {
 	const STR_WRAP_WRAP		= 1;
 	const STR_WRAP_CUT		= 2;

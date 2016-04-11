@@ -17,9 +17,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-require_once "../Controller/OmRequest.php";
-require_once "RequestDispatcher.php";
-require_once "../../Util/HTML.php";
+namespace Mindbit\Mpl\Mvc\View;
+
+use Mindbit\Mpl\Mvc\Controller\OmRequest;
+use Mindbit\Mpl\Mvc\View\RequestDispatcher;
+use Mindbit\Mpl\Util\HTML;
 
 abstract class BaseForm extends RequestDispatcher {
 	// constants for coding various doctypes

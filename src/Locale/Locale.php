@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+namespace Mindbit\Mpl\Locale;
+
 class Locale {
 	private static $directory;
 	private static $current = array();

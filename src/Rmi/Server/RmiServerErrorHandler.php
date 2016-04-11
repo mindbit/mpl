@@ -1,5 +1,7 @@
 <?php
-require_once "ThrowErrorHandler.php";
+namespace Mindbit\Mpl\Rmi\Server;
+
+use Mindbit\Mpl\Error\ThrowErrorHandler;
 
 class RmiServerErrorHandler extends ThrowErrorHandler {
     protected function __handleException($exception) {

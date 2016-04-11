@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+namespace Mindbit\Mpl\Auth;
+
 interface GenericUser {
 	/**
 	 * Simple authentication against username and password.

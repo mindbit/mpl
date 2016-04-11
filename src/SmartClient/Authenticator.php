@@ -17,8 +17,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-require_once 'RPCResponse.php';
-require_once '../Mvc/View/RequestDispatcher.php';
+namespace Mindbit\Mpl\SmartClient;
+
+use Mindbit\Mpl\SmartClient\RPCResponse;
+use Mindbit\Mpl\Mvc\View\RequestDispatcher;
 
 abstract class Authenticator extends RequestDispatcher {
 	/**

@@ -1,4 +1,9 @@
 <?php
+
+namespace Mindbit\Mpl\Rmi\Common;
+
+use Mindbit\Mpl\Rmi\Common\RmiResponse;
+
 abstract class RmiBaseResponse extends RmiResponse {
     /**
      * Arguments that have been changed from within the

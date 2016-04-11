@@ -17,7 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-require_once 'OmRequest.php';
+namespace Mindbit\Mpl\Mvc\Controller;
+
+use Mindbit\Mpl\Mvc\Controller\OmRequest;
 
 abstract class SimpleFormRequest extends OmRequest {
 	const OPERATION_NEW = 5;

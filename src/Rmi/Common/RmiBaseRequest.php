@@ -1,4 +1,9 @@
 <?php
+
+namespace Mindbit\Mpl\Rmi\Common;
+
+use Mindbit\Mpl\Rmi\Common\RmiRequest;
+
 abstract class RmiBaseRequest extends RmiRequest {
     protected $args;
 

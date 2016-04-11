@@ -1,5 +1,8 @@
 <?php
-require_once "../Error/ThrowErrorHandler.php";
+
+namespace Mindbit\Mpl\Xml;
+
+use Mindbit\Mpl\Error\ThrowErrorHandler;
 
 class MplDOMDocument extends DOMDocument {
 	function load($filename, $options = 0) {

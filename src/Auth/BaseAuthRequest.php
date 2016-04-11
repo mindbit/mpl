@@ -16,9 +16,9 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
+namespace Mindbit\Mpl\Auth;
 
-require_once "../Mvc/Controller/BaseRequest.php";
-require_once "../Session/Session.php";
+use Mindbit\Mpl\Mvc\Controller\BaseRequest;
 
 /**
  * Generic implementation of user authentication using PHP sessions.

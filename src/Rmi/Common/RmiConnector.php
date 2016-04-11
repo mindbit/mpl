@@ -1,4 +1,7 @@
 <?php
+
+namespace Mindbit\Mpl\Rmi\Common;
+
 abstract class RmiConnector {
     protected $streamIn, $streamOut;
 

@@ -17,8 +17,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-require_once "../Util/BC.php";
-require_once "../Asn/Asn.php";
+namespace Mindbit\Mpl\Pki;
+
+use Mindbit\Mpl\Util\BC;
+use Mindbit\Mpl\Asn\Asn;
 
 class X509 {
 	protected $pem;

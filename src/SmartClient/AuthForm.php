@@ -17,7 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-require_once "../Mvc/View/BaseForm.php";
+namespace Mindbit\Mpl\SmartClient;
+
+use Mindbit\Mpl\Mvc\View\BaseForm;
 
 /**
  * Protect a DataSource server from being accessed without authentication.

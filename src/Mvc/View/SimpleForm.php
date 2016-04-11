@@ -17,8 +17,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-require_once "BaseForm.php";
-require_once "../../Locale/Locale.php";
+namespace Mindbit\Mpl\Mvc\View;
+
+use Mindbit\Mpl\Mvc\View\BaseForm;
+use Mindbit\Mpl\Locale\Locale;
 
 abstract class SimpleForm extends BaseForm {
 	const ACTION_SELF_CLOSE		= 0x01;

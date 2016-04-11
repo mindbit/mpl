@@ -17,7 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-require_once "GenericErrorHandler.php";
+namespace Mindbit\Mpl\Error;
+
+use Mindbit\Mpl\Error\GenericErrorHandler;
 
 /**
  * A GenericErrorHandler that throws an ErrorException on errors instead

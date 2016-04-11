@@ -1,4 +1,5 @@
 <?php
+namespace Mindbit\Mpl\Util;
 
 class GetOpt {
 	const S_PC_OPT			= 0;

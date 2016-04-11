@@ -17,8 +17,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-require_once 'Error/ErrorHandler.php';
-require_once 'Error/GenericErrorHandler.php';
+namespace Mindbit\Mpl;
+
+use Mindbit\Mpl\Error\ErrorHandler;
+use Mindbit\Mpl\Error\GenericErrorHandler;
 
 class MPL {
     static $logger;

@@ -17,7 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-require_once "../Mvc/View/BaseForm.php";
+namespace Mindbit\Mpl\Search;
+
+use Mindbit\Mpl\Mvc\View\BaseForm;
 
 abstract class SearchForm extends BaseForm {
 	protected $pager;

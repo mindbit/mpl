@@ -1,4 +1,9 @@
 <?php
+
+namespace Mindbit\Mpl\Rmi\Common;
+
+use Mindbit\Mpl\Rmi\Common\RmiResponse;
+
 class RmiExceptionResponse extends RmiResponse {
     protected $exception;
 

@@ -17,8 +17,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-require_once 'BaseRequest.php';
-require_once '../../Util/Propel.php';
+namespace Mindbit\Mpl\Mvc\Controller;
+
+use Mindbit\Mpl\Mvc\Controller\BaseRequest;
+use Mindbit\Mpl\Util\Propel;
 
 abstract class OmRequest extends BaseRequest {
 	const OPERATION_FETCH  = 1;

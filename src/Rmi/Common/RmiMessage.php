@@ -1,4 +1,7 @@
 <?php
+
+namespace Mindbit\Mpl\Rmi\Common;
+
 /**
  * Support for reading from and writing to streams.
  */

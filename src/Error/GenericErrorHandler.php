@@ -17,9 +17,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-require_once 'AbstractErrorHandler.php';
-require_once '../Util/AsciiTable.php';
-require_once '../Deprecated/Version.php';
+namespace Mindbit\Mpl\Error;
+
+use Mindbit\Mpl\Error\AbstractErrorHandler;
+use Mindbit\Mpl\Util\AsciiTable;
+use Mindbit\Mpl\Deprecated\Version;
 
 define("EXC_TABLE_WIDTH",    72);
 define("EXC_LEFT_WIDTH",     25);

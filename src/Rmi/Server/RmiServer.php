@@ -1,4 +1,9 @@
 <?php
+
+namespace Mindbit\Mpl\Rmi\Server;
+
+use Mindbit\Mpl\Rmi\Common\RmiConnector;
+
 abstract class RmiServer extends RmiConnector {
     protected static $registry = array();
     protected static $serial = 0;

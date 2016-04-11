@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+namespace Mindbit\Mpl\Util;
+
 /**
  * This can be generated with tools/iso-3166-codes.php.
  */

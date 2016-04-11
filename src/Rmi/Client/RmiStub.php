@@ -1,4 +1,6 @@
 <?php
+namespace mindbit\Mpl\Rmi\Client;
+
 class RmiStub {
     protected $__rmiId;
     protected $__rmiClient;

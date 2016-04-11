@@ -17,6 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+namespace Mindbit\Mpl\Util;
+
 class PdfTk {
 	static function fdfUtf16($text, $encoding = "utf-8") {
 		$utf16 = iconv($encoding, "utf-16be", $text);

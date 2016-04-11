@@ -16,10 +16,12 @@
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
-require_once '../Mvc/Controller/OmRequest.php';
-require_once '../Rmi.php';
-require_once 'RPCResponse.php';
-require_once '../Deprecated/Version.php';
+
+namespace Mindbit\Mpl\SmartClient;
+
+use Mindbit\Mpl\Mvc\Controller\OmRequest;
+use Mindbit\Mpl\RPCResponse;
+use Mindbit\Mpl\Deprecated\Version;
 
 class RestResponse extends RPCResponse {
 	protected $rows = array();

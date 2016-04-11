@@ -17,7 +17,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
-require_once("AbstractErrorHandler.php");
+namespace Mindbit\Mpl\Error;
+
+use Mindbit\Mpl\Error\AbstractErrorHandler;
 
 class ErrorHandler {
 	protected static $handlerInstance = null;

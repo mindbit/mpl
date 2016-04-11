@@ -1,4 +1,9 @@
 <?php
+
+namespace Mindbit\Mpl\Rmi\Client;
+
+use Mindbit\Mpl\Rmi\Common\RmiConnector;
+
 abstract class RmiClient extends RmiConnector {
     function createInstance($class) {
         $args = func_get_args();

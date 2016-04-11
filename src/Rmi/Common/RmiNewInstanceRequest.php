@@ -1,4 +1,9 @@
 <?php
+
+namespace Mindbit\Mpl\Rmi\Common;
+
+use Mindbit\Mpl\Rmi\Common\RmiBaseRequest;
+
 class RmiNewInstanceRequest extends RmiBaseRequest {
     protected $class;
 

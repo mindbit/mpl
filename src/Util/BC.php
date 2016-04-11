@@ -25,6 +25,8 @@
    requests served by the same process.
  */
 
+namespace Mindbit\Mpl\Util;
+
 class BC {
 	static function baseConvert($number, $iBase, $oBase) {
 		// if iBase != 10, convert to base 10
