@@ -1,27 +1,51 @@
 <?php
+/*    Mindbit PHP Library
+ *    Copyright (C) 2009 Mindbit SRL
+ *
+ *    This library is free software; you can redistribute it and/or
+ *    modify it under the terms of the GNU Lesser General Public
+ *    License as published by the Free Software Foundation; either
+ *    version 2.1 of the License, or (at your option) any later version.
+ *
+ *    This library is distributed in the hope that it will be useful,
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *    Lesser General Public License for more details.
+ *
+ *    You should have received a copy of the GNU Lesser General Public
+ *    License along with this library; if not, write to the Free Software
+ *    Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+
 namespace mindbit\Mpl\Rmi\Client;
 
-class RmiStub {
-    protected $__rmiId;
-    protected $__rmiClient;
+class RmiStub
+{
+    protected $rmiId;
+    protected $rmiClient;
 
-    function getRmiId() {
-        return $this->__rmiId;
+    public function getRmiId()
+    {
+        return $this->rmiId;
     }
 
-    function setRmiId($rmiId) {
-        $this->__rmiId = $rmiId;
+    public function setRmiId($rmiId)
+    {
+        $this->rmiId = $rmiId;
     }
 
-    function getRmiClient() {
-        return $this->__rmiClient;
+    public function getRmiClient()
+    {
+        return $this->rmiClient;
     }
 
-    function setRmiClient($rmiClient) {
-        $this->__rmiClient = $rmiClient;
+    public function setRmiClient($rmiClient)
+    {
+        $this->rmiClient = $rmiClient;
     }
 
-    function __call($name, $arguments) {
-        return $this->__rmiClient->callMethod($this, $name, $arguments);
+    public function __call($name, $arguments)
+    {
+        return $this->rmiClient->callMethod($this, $name, $arguments);
     }
 }

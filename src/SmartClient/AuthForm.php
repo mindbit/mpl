@@ -24,31 +24,36 @@ use Mindbit\Mpl\Mvc\View\BaseForm;
 /**
  * Protect a DataSource server from being accessed without authentication.
  */
-abstract class AuthForm extends BaseForm {
-	function write() {
-		switch ($this->request->getState()) {
-		case BaseAuthRequest::S_AUTH_CACHED:
-			// the user is already authenticated and we pass control to
-			// any subsequent RequestDispatcher
-			return;
-		case BaseAuthRequest::S_AUTH_REQUIRED:
-			// call parent implementation to display login status code
-			// markers and trigger login processing in client RPCManager
-			parent::write();
+abstract class AuthForm extends BaseForm
+{
+    public function write()
+    {
+        switch ($this->request->getState()) {
+            case BaseAuthRequest::S_AUTH_CACHED:
+                // the user is already authenticated and we pass control to
+                // any subsequent RequestDispatcher
+                return;
+            case BaseAuthRequest::S_AUTH_REQUIRED:
+                // call parent implementation to display login status code
+                // markers and trigger login processing in client RPCManager
+                parent::write();
 
-			// prevent any subsequent RequestDispatcher from being called
-			exit;
-		}
-	}
+                // prevent any subsequent RequestDispatcher from being called
+                exit;
+        }
+    }
 
-	function form() {
-		// TODO when authentication fails, respond with SmartClient login
-		// status code markers; see RPCManager.processLoginStatusText()
-	}
+    public function form()
+    {
+        // TODO when authentication fails, respond with SmartClient login
+        // status code markers; see RPCManager.processLoginStatusText()
+    }
 
-	function getTitle() {
-	}
+    public function getTitle()
+    {
+    }
 
-	function getFormAttributes() {
-	}
+    public function getFormAttributes()
+    {
+    }
 }

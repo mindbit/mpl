@@ -22,39 +22,42 @@ namespace Mindbit\Mpl\SmartClient;
 use Mindbit\Mpl\SmartClient\RPCResponse;
 use Mindbit\Mpl\Mvc\View\RequestDispatcher;
 
-abstract class Authenticator extends RequestDispatcher {
-	/**
-	 * Build an associative array of data that will be passed to the
-	 * SmartClient application.
-	 *
-	 * Typically this contains user data such as the real user's name,
-	 * privileges, group membership, etc.
-	 */
-	function getSessionData() {
-	}
+abstract class Authenticator extends RequestDispatcher
+{
+    /**
+     * Build an associative array of data that will be passed to the
+     * SmartClient application.
+     *
+     * Typically this contains user data such as the real user's name,
+     * privileges, group membership, etc.
+     */
+    public function getSessionData()
+    {
+    }
 
-	function write() {
-		$r = new RPCResponse();
+    public function write()
+    {
+        $r = new RPCResponse();
 
-		switch ($this->request->getState()) {
-		case BaseAuthRequest::S_AUTH_REQUIRED:
-			$r->status = RPCResponse::STATUS_LOGIN_REQUIRED;
-			break;
-		case BaseAuthRequest::S_AUTH_FAILED:
-			$r->status = RPCResponse::STATUS_LOGIN_INCORRECT;
-			break;
-		case BaseAuthRequest::S_AUTH_SUCCESS:
-			$r->status = RPCResponse::STATUS_LOGIN_SUCCESS;
-			$r->session = $this->getSessionData();
-			break;
-		case BaseAuthRequest::S_AUTH_CACHED:
-			$r->status = RPCResponse::STATUS_SUCCESS;
-			$r->session = $this->getSessionData();
-			break;
-		default:
-			$r->status = RPCResponse::STATUS_FAILURE;
-		}
+        switch ($this->request->getState()) {
+            case BaseAuthRequest::S_AUTH_REQUIRED:
+                $r->status = RPCResponse::STATUS_LOGIN_REQUIRED;
+                break;
+            case BaseAuthRequest::S_AUTH_FAILED:
+                $r->status = RPCResponse::STATUS_LOGIN_INCORRECT;
+                break;
+            case BaseAuthRequest::S_AUTH_SUCCESS:
+                $r->status = RPCResponse::STATUS_LOGIN_SUCCESS;
+                $r->session = $this->getSessionData();
+                break;
+            case BaseAuthRequest::S_AUTH_CACHED:
+                $r->status = RPCResponse::STATUS_SUCCESS;
+                $r->session = $this->getSessionData();
+                break;
+            default:
+                $r->status = RPCResponse::STATUS_FAILURE;
+        }
 
-		echo $r->jsonEncode();
-	}
+        echo $r->jsonEncode();
+    }
 }

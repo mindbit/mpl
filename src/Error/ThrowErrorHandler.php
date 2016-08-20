@@ -28,8 +28,10 @@ use Mindbit\Mpl\Error\GenericErrorHandler;
  * This is useful for environments that need to recover from errors,
  * such as an RMI server or a RestDataSource.
  */
-class ThrowErrorHandler extends GenericErrorHandler {
-	protected function __handleError($data) {
-		throw new ErrorException($data["description"], $data["code"], 0, $data["filename"], $data["line"]);
-	}
+class ThrowErrorHandler extends GenericErrorHandler
+{
+    protected function __handleError($data)
+    {
+        throw new ErrorException($data["description"], $data["code"], 0, $data["filename"], $data["line"]);
+    }
 }

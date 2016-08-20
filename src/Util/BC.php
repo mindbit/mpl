@@ -27,32 +27,37 @@
 
 namespace Mindbit\Mpl\Util;
 
-class BC {
-	static function baseConvert($number, $iBase, $oBase) {
-		// if iBase != 10, convert to base 10
-		if ($iBase != 10) {
-			$pow = "1";
-			$dec = "0";
-			$number = strtoupper($number);
-			for ($i = strlen($number) - 1; $i >= 0; $i--) {
-				$c = $number[$i];
-				if ($c >= 'A')
-					$c = (string)(ord($c) - 55);
-				$dec = bcadd($dec, bcmul($pow, $c, 0), 0);
-				$pow = bcmul($pow, $iBase, 0);
-			}
-			$number = $dec;
-		}
-		if ($oBase == 10)
-			return $number;
-		$ret = '';
-		while (bccomp($number, "0", 0) > 0) {
-			$mod = bcmod($number, $oBase);
-			$number = bcdiv(bcsub($number, $mod, 0), $oBase, 0);
-			if ((int)$mod >= 10)
-				$mod = chr(55 + $mod);
-			$ret = $mod . $ret;
-		}
-		return $ret;
-	}
+class BC
+{
+    public static function baseConvert($number, $iBase, $oBase)
+    {
+        // if iBase != 10, convert to base 10
+        if ($iBase != 10) {
+            $pow = "1";
+            $dec = "0";
+            $number = strtoupper($number);
+            for ($i = strlen($number) - 1; $i >= 0; $i--) {
+                $c = $number[$i];
+                if ($c >= 'A') {
+                    $c = (string)(ord($c) - 55);
+                }
+                $dec = bcadd($dec, bcmul($pow, $c, 0), 0);
+                $pow = bcmul($pow, $iBase, 0);
+            }
+            $number = $dec;
+        }
+        if ($oBase == 10) {
+            return $number;
+        }
+        $ret = '';
+        while (bccomp($number, "0", 0) > 0) {
+            $mod = bcmod($number, $oBase);
+            $number = bcdiv(bcsub($number, $mod, 0), $oBase, 0);
+            if ((int)$mod >= 10) {
+                $mod = chr(55 + $mod);
+            }
+            $ret = $mod . $ret;
+        }
+        return $ret;
+    }
 }

@@ -19,38 +19,38 @@
 
 namespace Mindbit\Mpl\Session;
 
-// require_once 'GenericUser.php';
-// require_once "Locale.php";
+class Session
+{
+    protected static $user = null;
 
-class Session {
-	protected static $user = null;
+    public static function setUser($user)
+    {
+        self::$user = $user;
+    }
 
-	static function setUser($user) {
-		self::$user = $user;
-	}
+    public static function getUser()
+    {
+        return self::$user;
+    }
 
-	static function getUser() {
-		return self::$user;
-	}
+    /* TODO these need to be standardized and are not ready for use
+    static function setLocale() {
+        header("Content-type: text/html; charset=utf-8");
+        Locale::setDirectory(realpath(dirname(__FILE__) . "/../locale"));
+        Locale::set(LC_MESSAGES, "ro_RO");
+    }
 
-	/* TODO these need to be standardized and are not ready for use
-	static function setLocale() {
-		header("Content-type: text/html; charset=utf-8");
-		Locale::setDirectory(realpath(dirname(__FILE__) . "/../locale"));
-		Locale::set(LC_MESSAGES, "ro_RO");
-	}
+    static function log($message, $priority) {
+        Config::$log->log(
+                "[" . $_SERVER['REMOTE_ADDR'] . "|" . $_SERVER['REMOTE_PORT'] . "] " .
+                "[" . (self::$user === null ? "<anonymous>" : self::$user->getUsername()) . "] " .
+                $message,
+                $priority
+                );
+    }
 
-	static function log($message, $priority) {
-		Config::$log->log(
-				"[" . $_SERVER['REMOTE_ADDR'] . "|" . $_SERVER['REMOTE_PORT'] . "] " .
-				"[" . (self::$user === null ? "<anonymous>" : self::$user->getUsername()) . "] " .
-				$message,
-				$priority
-				);
-	}
-
-	static function logQuery($sql) {
-		self::log("[QUERY] " . $sql, PEAR_LOG_DEBUG);
-	}
-	*/
+    static function logQuery($sql) {
+        self::log("[QUERY] " . $sql, PEAR_LOG_DEBUG);
+    }
+    */
 }

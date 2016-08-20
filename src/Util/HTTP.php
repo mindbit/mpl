@@ -19,31 +19,37 @@
 
 namespace Mindbit\Mpl\Util;
 
-class HTTP {
-	static function inVar($varName, $default = null, $type = null) {
-		if (!isset($_REQUEST[$varName]))
-			return $default;
-		if ($type === null)
-			return $_REQUEST[$varName];
-		$ret = $_REQUEST[$varName];
-		settype($ret, $type);
-		return $ret;
-	}
+class HTTP
+{
+    public static function inVar($varName, $default = null, $type = null)
+    {
+        if (!isset($_REQUEST[$varName])) {
+            return $default;
+        }
+        if ($type === null) {
+            return $_REQUEST[$varName];
+        }
+        $ret = $_REQUEST[$varName];
+        settype($ret, $type);
+        return $ret;
+    }
 
-	static function rawRequest($includeRequest = true, $includeHeaders = true) {
-		$hdr = "";
-		if ($includeRequest) {
-			$hdr .=
-				$_SERVER['REQUEST_METHOD'] . ' ' .
-				$_SERVER['REQUEST_URI'] .
-				"\r\n";
-		}
-		if ($includeHeaders) {
-			$hdrArray = apache_request_headers();
-			foreach ($hdrArray as $name => $value)
-				$hdr .= $name . ": " . $value . "\r\n";
-			$hdr .= "\r\n";
-		}
-		return $hdr . file_get_contents('php://input');
-	}
+    public static function rawRequest($includeRequest = true, $includeHeaders = true)
+    {
+        $hdr = "";
+        if ($includeRequest) {
+            $hdr .=
+                $_SERVER['REQUEST_METHOD'] . ' ' .
+                $_SERVER['REQUEST_URI'] .
+                "\r\n";
+        }
+        if ($includeHeaders) {
+            $hdrArray = apache_request_headers();
+            foreach ($hdrArray as $name => $value) {
+                $hdr .= $name . ": " . $value . "\r\n";
+            }
+            $hdr .= "\r\n";
+        }
+        return $hdr . file_get_contents('php://input');
+    }
 }

@@ -22,10 +22,12 @@ namespace Mindbit\Mpl\Deprecated;
 use Mindbit\Mpl\Mvc\View\RequestDispatcher;
 use Mindbit\Mpl\HTML\Template\Sigma;
 
-abstract class TemplateSigmaForm extends RequestDispatcher {
+abstract class TemplateSigmaForm extends RequestDispatcher
+{
     protected $template;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->template = new HTML_Template_Sigma();
         $this->template->setRoot(TEMPLATE_ROOT);
         $this->template->loadTemplateFile($this->getTemplateFile());
@@ -33,14 +35,16 @@ abstract class TemplateSigmaForm extends RequestDispatcher {
         parent::__construct();
     }
 
-    public function getTemplateFile() {
+    public function getTemplateFile()
+    {
         return get_class($this) . '.html';
     }
 
-    public function write() {
+    public function write()
+    {
         $this->parse();
         $this->template->show();
     }
 
-    public abstract function parse();
+    abstract public function parse();
 }

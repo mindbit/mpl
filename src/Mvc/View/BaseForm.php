@@ -23,126 +23,157 @@ use Mindbit\Mpl\Mvc\Controller\OmRequest;
 use Mindbit\Mpl\Mvc\View\RequestDispatcher;
 use Mindbit\Mpl\Util\HTML;
 
-abstract class BaseForm extends RequestDispatcher {
-	// constants for coding various doctypes
-	// bits 0 to 7 are for minor version, 8 to 15 for major
-	const DT_STRICT			= 0x00010000;
-	const DT_TRANSITIONAL	= 0x00020000;
-	const DT_FRAMESET		= 0x00030000;
-	const DT_XHTML			= 0x00100000;
+abstract class BaseForm extends RequestDispatcher
+{
+    // constants for coding various doctypes
+    // bits 0 to 7 are for minor version, 8 to 15 for major
+    const DT_STRICT             = 0x00010000;
+    const DT_TRANSITIONAL       = 0x00020000;
+    const DT_FRAMESET           = 0x00030000;
+    const DT_XHTML              = 0x00100000;
 
-	// valid doctypes in W3C Recommendations
-	// for further info, see http://www.w3schools.com/tags/tag_DOCTYPE.asp
-	const DT_HTML_4_01_STRICT		= 0x00010401; // DT_STRICT | 0x401;
-	const DT_HTML_4_01_TRANSITIONAL	= 0x00020401; // DT_TRANSITIONAL | 0x401;
-	const DT_HTML_4_01_FRAMESET		= 0x00030401; // DT_FRAMESET | 0x401;
-	const DT_XHTML_1_0_STRICT		= 0x00110100; // DT_XHTML | DT_STRICT | 0x100;
-	const DT_XHTML_1_0_TRANSITIONAL	= 0x00120100; // DT_XHTML | DT_TRANSITIONAL | 0x100;
-	const DT_XHTML_1_0_FRAMESET		= 0x00130100; // DT_XHTML | DT_FRAMESET | 0x100;
-	const DT_XHTML_1_1				= 0x00100101; // DT_XHTML | 0x101;
+    // valid doctypes in W3C Recommendations
+    // for further info, see http://www.w3schools.com/tags/tag_DOCTYPE.asp
+    const DT_HTML_4_01_STRICT           = 0x00010401; // DT_STRICT | 0x401;
+    const DT_HTML_4_01_TRANSITIONAL     = 0x00020401; // DT_TRANSITIONAL | 0x401;
+    const DT_HTML_4_01_FRAMESET         = 0x00030401; // DT_FRAMESET | 0x401;
+    const DT_XHTML_1_0_STRICT           = 0x00110100; // DT_XHTML | DT_STRICT | 0x100;
+    const DT_XHTML_1_0_TRANSITIONAL     = 0x00120100; // DT_XHTML | DT_TRANSITIONAL | 0x100;
+    const DT_XHTML_1_0_FRAMESET         = 0x00130100; // DT_XHTML | DT_FRAMESET | 0x100;
+    const DT_XHTML_1_1                  = 0x00100101; // DT_XHTML | 0x101;
 
-	// constants-to-uri map for valid doctypes
-	protected static $doctypeMap = array(
-			self::DT_HTML_4_01_STRICT		=> '"-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"',
-			self::DT_HTML_4_01_TRANSITIONAL	=> '"-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"',
-			self::DT_HTML_4_01_FRAMESET		=> '"-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd"',
-			self::DT_XHTML_1_0_STRICT		=> '"-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"',
-			self::DT_XHTML_1_0_TRANSITIONAL	=> '"-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"',
-			self::DT_XHTML_1_0_FRAMESET		=> '"-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd"',
-			self::DT_XHTML_1_1				=> '"-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"'
-			);
+    // constants-to-uri map for valid doctypes
+    protected static $doctypeMap = array(
+            self::DT_HTML_4_01_STRICT            =>
+            '"-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd"',
+            self::DT_HTML_4_01_TRANSITIONAL      =>
+            '"-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd"',
+            self::DT_HTML_4_01_FRAMESET          =>
+            '"-//W3C//DTD HTML 4.01 Frameset//EN" "http://www.w3.org/TR/html4/frameset.dtd"',
+            self::DT_XHTML_1_0_STRICT            =>
+            '"-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"',
+            self::DT_XHTML_1_0_TRANSITIONAL      =>
+            '"-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"',
+            self::DT_XHTML_1_0_FRAMESET          =>
+            '"-//W3C//DTD XHTML 1.0 Frameset//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-frameset.dtd"',
+            self::DT_XHTML_1_1                   =>
+            '"-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd"'
+            );
 
-	const MEDIA_SCREEN		= "screen";
-	const MEDIA_PRINT		= "print";
+    const MEDIA_SCREEN        = "screen";
+    const MEDIA_PRINT         = "print";
 
-	protected $om;
+    protected $om;
 
-	abstract function form();
-	abstract function getTitle();
-	abstract function getFormAttributes();
+    abstract public function form();
+    abstract public function getTitle();
+    abstract public function getFormAttributes();
 
-	function __construct() {
-		parent::__construct();
+    public function __construct()
+    {
+        parent::__construct();
 
-		if ($this->request instanceof OmRequest)
-			$this->om = $this->request->getOm();
-	}
+        if ($this->request instanceof OmRequest) {
+            $this->om = $this->request->getOm();
+        }
+    }
 
-	function getOm() {
-		return $this->om;
-	}
+    public function getOm()
+    {
+        return $this->om;
+    }
 
-	function setOm($om) {
-		$this->om = $om;
-	}
+    public function setOm($om)
+    {
+        $this->om = $om;
+    }
 
-	function getDoctype() {
-	}
+    public function getDoctype()
+    {
+    }
 
-	function tag($name, $attr = array(), $close = false) {
-		$dt = $this->getDoctype();
-		$close = $close ?
-			($dt === null || !($dt & self::DT_XHTML) ? HTML::TAG_CLOSE_HTML : HTML::TAG_CLOSE_XHTML) :
-			HTML::TAG_CLOSE_NONE;
-		return HTML::tag($name, $attr, $close);
-	}
+    public function tag($name, $attr = array(), $close = false)
+    {
+        $dt = $this->getDoctype();
+        $close = $close ?
+            ($dt === null || !($dt & self::DT_XHTML) ? HTML::TAG_CLOSE_HTML : HTML::TAG_CLOSE_XHTML) :
+            HTML::TAG_CLOSE_NONE;
+        return HTML::tag($name, $attr, $close);
+    }
 
-	function write() {
-		$doctype = $this->getDoctype();
-		if (null !== $doctype)
-			echo "<!DOCTYPE " . self::$doctypeMap[$doctype] . ">\n";
-		?>
-		<html>
-		<head>
-		<?php $this->head(); ?>
-		</head>
-		<body>
-		<?php $this->body(); ?>
-		</body>
-		</html>
-		<?php
-	}
+    public function write()
+    {
+        $doctype = $this->getDoctype();
+        if (null !== $doctype) {
+            echo "<!DOCTYPE " . self::$doctypeMap[$doctype] . ">\n";
+        }
+        ?>
+        <html>
+        <head>
+        <?php $this->head(); ?>
+        </head>
+        <body>
+        <?php $this->body(); ?>
+        </body>
+        </html>
+        <?php
+    }
 
-	function head() {
-		$this->title();
-		$this->css();
-		$this->javaScript();
-	}
+    public function head()
+    {
+        $this->title();
+        $this->css();
+        $this->javaScript();
+    }
 
-	function title() {
-	?>
-	<title><?= $this->getTitle()?></title>
-	<?php
-	}
+    public function title()
+    {
+        ?>
+        <title><?= $this->getTitle()?></title>
+        <?php
+    }
 
-	function css() {
-	}
+    public function css()
+    {
+    }
 
-	function javaScript() {
-	}
+    public function javaScript()
+    {
+    }
 
-	function body() {
-		echo HTML::tag("form", $this->getFormAttributes());
-		$this->form();
-		echo "</form>";
-	}
+    public function body()
+    {
+        echo HTML::tag("form", $this->getFormAttributes());
+        $this->form();
+        echo "</form>";
+    }
 
-	function cssTag($url, $media = null) {
-		$attr = array(
-					"rel"	=> "stylesheet",
-					"href"	=> $url,
-					"type"	=> "text/css"
-					);
-		if ($media !== null)
-			$attr["media"] = $media;
-		echo $this->tag("link", $attr,
-				($this->getDoctype() & self::DT_XHTML) ? HTML::TAG_CLOSE_XHTML : HTML::TAG_CLOSE_NONE);
-	}
+    public function cssTag($url, $media = null)
+    {
+        $attr = array(
+                "rel"  => "stylesheet",
+                "href" => $url,
+                "type" => "text/css"
+                );
+        if ($media !== null) {
+            $attr["media"] = $media;
+        }
+        echo $this->tag(
+            "link",
+            $attr,
+            ($this->getDoctype() & self::DT_XHTML) ? HTML::TAG_CLOSE_XHTML : HTML::TAG_CLOSE_NONE
+        );
+    }
 
-	function jsTag($url) {
-		echo $this->tag("script", array(
-					"type"	=> "text/javascript",
-					"src"	=> $url
-					), true);
-	}
+    public function jsTag($url)
+    {
+        echo $this->tag(
+            "script",
+            array(
+                "type" => "text/javascript",
+                "src"  => $url
+            ),
+            true
+        );
+    }
 }

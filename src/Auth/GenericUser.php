@@ -19,12 +19,13 @@
 
 namespace Mindbit\Mpl\Auth;
 
-interface GenericUser {
-	/**
-	 * Simple authentication against username and password.
-	 *
-	 * This method should return a valid class instance if authentication
-	 * succeeds or null if it fails.
-	 */
-	static function authenticate($username, $password);
+interface GenericUser
+{
+    /**
+     * Simple authentication against username and password.
+     *
+     * This method should return a valid class instance if authentication
+     * succeeds or null if it fails.
+     */
+    public static function authenticate($username, $password);
 }

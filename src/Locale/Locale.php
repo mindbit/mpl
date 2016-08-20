@@ -19,96 +19,108 @@
 
 namespace Mindbit\Mpl\Locale;
 
-class Locale {
-	private static $directory;
-	private static $current = array();
-	private static $data = array();
-	private static $escapeMap = array(
-			'\\'	=> '\\\\',
-			'\''	=> '\\\''
-			);
+class Locale
+{
+    private static $directory;
+    private static $current = array();
+    private static $data = array();
+    private static $escapeMap = array(
+            '\\'    => '\\\\',
+            '\''    => '\\\''
+            );
 
-	static function load($category, $locale) {
-		assert(self::$directory !== null);
-		assert(strspn($locale, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_") == strlen($locale));
-		if (!isset(self::$data[$category]))
-			self::$data[$category] = array();
-		switch ($category) {
-		case LC_MESSAGES:
-			$path = self::$directory . "/" . $locale . "/LC_MESSAGES/messages.pd";
-			assert(is_readable($path));
-			self::$data[LC_MESSAGES][$locale] = include($path);
-		}
-	}
+    public static function load($category, $locale)
+    {
+        assert(self::$directory !== null);
+        assert(strspn($locale, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_") == strlen($locale));
+        if (!isset(self::$data[$category])) {
+            self::$data[$category] = array();
+        }
+        switch ($category) {
+            case LC_MESSAGES:
+                $path = self::$directory . "/" . $locale . "/LC_MESSAGES/messages.pd";
+                assert(is_readable($path));
+                self::$data[LC_MESSAGES][$locale] = include($path);
+        }
+    }
 
-	static function setDirectory($directory) {
-		self::$directory = $directory;
-	}
+    public static function setDirectory($directory)
+    {
+        self::$directory = $directory;
+    }
 
-	static function set($category, $locale) {
-		if (!isset(self::$data[$category][$locale]))
-			self::load($category, $locale);
-		self::$current[$category] = $locale;
-	}
+    public static function set($category, $locale)
+    {
+        if (!isset(self::$data[$category][$locale])) {
+            self::load($category, $locale);
+        }
+        self::$current[$category] = $locale;
+    }
 
-	static function getText($message) {
-		assert(isset(self::$current[LC_MESSAGES]));
-		if (isset(self::$data[LC_MESSAGES][self::$current[LC_MESSAGES]][$message]))
-			return self::$data[LC_MESSAGES][self::$current[LC_MESSAGES]][$message];
-		return $message;
-	}
+    public static function getText($message)
+    {
+        assert(isset(self::$current[LC_MESSAGES]));
+        if (isset(self::$data[LC_MESSAGES][self::$current[LC_MESSAGES]][$message])) {
+            return self::$data[LC_MESSAGES][self::$current[LC_MESSAGES]][$message];
+        }
+        return $message;
+    }
 
-	static function moToPhp($stream) {
-		$ret = "";
-		$stream->seek(0);
-		
-		// check magic
-		if ($stream->readIntLE() != ((0x9504 << 16) | (0x12de)))
-			return null;
-		
-		// check revision
-		if ($stream->readIntLE() !== 0)
-			return null;
+    public static function moToPhp($stream)
+    {
+        $ret = "";
+        $stream->seek(0);
 
-		// number of strings
-		$n = $stream->readIntLE();
+        // check magic
+        if ($stream->readIntLE() != ((0x9504 << 16) | (0x12de))) {
+            return null;
+        }
 
-		// offset of table with original strings
-		$o = $stream->readIntLE();
+        // check revision
+        if ($stream->readIntLE() !== 0) {
+            return null;
+        }
 
-		// offset of table with translation strings
-		$t = $stream->readIntLE();
+        // number of strings
+        $n = $stream->readIntLE();
 
-		// actual conversion
-		$sep = "<" . "?\nreturn array(\n\t\t";
+        // offset of table with original strings
+        $o = $stream->readIntLE();
 
-		while ($n) {
-			$stream->seek($o);
-			$len = $stream->readIntLE();
-			$off = $stream->readIntLE();
-			$stream->seek($off);
-			$txt1 = $stream->read($len);
+        // offset of table with translation strings
+        $t = $stream->readIntLE();
 
-			$stream->seek($t);
-			$len = $stream->readIntLE();
-			$off = $stream->readIntLE();
-			$stream->seek($off);
-			$txt2 = $stream->read($len);
+        // actual conversion
+        $sep = "<" . "?\nreturn array(\n\t\t";
 
-			$ret .= $sep . "'" . strtr($txt1, self::$escapeMap) . "' => '" .
-				strtr($txt2, self::$escapeMap) . "'";
+        while ($n) {
+            $stream->seek($o);
+            $len = $stream->readIntLE();
+            $off = $stream->readIntLE();
+            $stream->seek($off);
+            $txt1 = $stream->read($len);
 
-			$sep = ",\n\t\t";
-			$o += 8;
-			$t += 8;
-			$n--;
-		}
-		$ret .= "\n\t\t);\n?" . ">\n";
+            $stream->seek($t);
+            $len = $stream->readIntLE();
+            $off = $stream->readIntLE();
+            $stream->seek($off);
+            $txt2 = $stream->read($len);
 
-		return $ret;
-	}
+            $ret .= $sep . "'" . strtr($txt1, self::$escapeMap) . "' => '" .
+                strtr($txt2, self::$escapeMap) . "'";
+
+            $sep = ",\n\t\t";
+            $o += 8;
+            $t += 8;
+            $n--;
+        }
+        $ret .= "\n\t\t);\n?" . ">\n";
+
+        return $ret;
+    }
 }
 
-function __($message) {
-	return Locale::getText($message);
+function __($message)
+{
+    return Locale::getText($message);
 }

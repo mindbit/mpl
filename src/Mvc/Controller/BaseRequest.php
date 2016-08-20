@@ -19,21 +19,25 @@
 
 namespace Mindbit\Mpl\Mvc\Controller;
 
-abstract class BaseRequest {
-	protected $state;
-	protected $err;
+abstract class BaseRequest
+{
+    protected $state;
+    protected $err;
 
-	abstract function dispatch();
+    abstract public function dispatch();
 
-	function getState() {
-		return $this->state;
-	}
+    public function getState()
+    {
+        return $this->state;
+    }
 
-	function setState($state) {
-		$this->state = $state;
-	}
+    public function setState($state)
+    {
+        $this->state = $state;
+    }
 
-	function getErrors() {
-		return $this->err;
-	}
+    public function getErrors()
+    {
+        return $this->err;
+    }
 }

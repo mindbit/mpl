@@ -19,57 +19,66 @@
 
 namespace Mindbit\Mpl\Util;
 
-class Propel {
-	const PROTECTED_MAGIC = "\000*\000";
+class Propel
+{
+    const PROTECTED_MAGIC = "\000*\000";
 
-	static function getOmPkey($om) {
-		$pkCriteriaMap = $om->buildPkeyCriteria()->getMap();
-		reset($pkCriteriaMap);
-		return key($pkCriteriaMap);
-	}
+    public static function getOmPkey($om)
+    {
+        $pkCriteriaMap = $om->buildPkeyCriteria()->getMap();
+        reset($pkCriteriaMap);
+        return key($pkCriteriaMap);
+    }
 
-	static function omListToArray($list, $fields, $type = BasePeer::TYPE_COLNAME) {
-		$ret = array();
-		if (empty($list))
-			return $ret;
+    public static function omListToArray($list, $fields, $type = BasePeer::TYPE_COLNAME)
+    {
+        $ret = array();
+        if (empty($list)) {
+            return $ret;
+        }
 
-		reset($list);
-		$om = current($list);
-		$omPeer = $om->getPeer();
-		$pk = $omPeer->translateFieldName(self::getOmPkey($om), BasePeer::TYPE_COLNAME, BasePeer::TYPE_FIELDNAME);
+        reset($list);
+        $om = current($list);
+        $omPeer = $om->getPeer();
+        $pk = $omPeer->translateFieldName(self::getOmPkey($om), BasePeer::TYPE_COLNAME, BasePeer::TYPE_FIELDNAME);
 
-		$__fields = is_array($fields) ? $fields : array($fields);
-		$fields = array();
-		foreach ($__fields as $f)
-			$fields[] = $omPeer->translateFieldName($f, $type, BasePeer::TYPE_FIELDNAME);
+        $__fields = is_array($fields) ? $fields : array($fields);
+        $fields = array();
+        foreach ($__fields as $f) {
+            $fields[] = $omPeer->translateFieldName($f, $type, BasePeer::TYPE_FIELDNAME);
+        }
 
-		foreach ($list as $om) {
-			$om = (array)$om;
-			if (count($fields) == 1) {
-				$ret[$om[self::PROTECTED_MAGIC . $pk]] = $om[self::PROTECTED_MAGIC . $fields[0]];
-				continue;
-			}
-			$tmp = array();
-			foreach ($fields as $f)
-				$tmp[$f] = $om[self::PROTECTED_MAGIC . $f];
-			$ret[$om[self::PROTECTED_MAGIC . $pk]] = $tmp;
-		}
+        foreach ($list as $om) {
+            $om = (array)$om;
+            if (count($fields) == 1) {
+                $ret[$om[self::PROTECTED_MAGIC . $pk]] = $om[self::PROTECTED_MAGIC . $fields[0]];
+                continue;
+            }
+            $tmp = array();
+            foreach ($fields as $f) {
+                $tmp[$f] = $om[self::PROTECTED_MAGIC . $f];
+            }
+            $ret[$om[self::PROTECTED_MAGIC . $pk]] = $tmp;
+        }
 
-		return $ret;
-	}
+        return $ret;
+    }
 
-	static function getOmPkeyValue($om) {
-		$omPeer = $om->getPeer();
-		$pk = $omPeer->translateFieldName(self::getOmPkey($om), BasePeer::TYPE_COLNAME, BasePeer::TYPE_FIELDNAME);
-		$om = (array)$om;
-		return $om[self::PROTECTED_MAGIC . $pk];
-	}
+    public static function getOmPkeyValue($om)
+    {
+        $omPeer = $om->getPeer();
+        $pk = $omPeer->translateFieldName(self::getOmPkey($om), BasePeer::TYPE_COLNAME, BasePeer::TYPE_FIELDNAME);
+        $om = (array)$om;
+        return $om[self::PROTECTED_MAGIC . $pk];
+    }
 
-	static function translateFieldNames($om, $fields, $fromType, $toType) {
-		$ret = array();
-		$omPeer = $om->getPeer();
-		foreach ($fields as $fieldname)
-			$ret[] = $omPeer->translateFieldName($fieldname, $fromType, $toType);
-		return $ret;
-	}
+    public static function translateFieldNames($om, $fields, $fromType, $toType)
+    {
+        $ret = array();
+        $omPeer = $om->getPeer();
+        foreach ($fields as $fieldname) {
+            $ret[] = $omPeer->translateFieldName($fieldname, $fromType, $toType);
+        }
+        return $ret;
+    }
 }

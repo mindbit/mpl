@@ -22,14 +22,17 @@ namespace Mindbit\Mpl;
 use Mindbit\Mpl\Error\ErrorHandler;
 use Mindbit\Mpl\Error\GenericErrorHandler;
 
-class MPL {
-    static $logger;
+class MPL
+{
+    private static $logger;
 
-    static function get($constant, $default = null) {
+    public static function get($constant, $default = null)
+    {
         return defined($constant) ? constant($constant) : $default;
     }
 
-    static function setAssertOptions() {
+    public static function setAssertOptions()
+    {
         assert_options(ASSERT_ACTIVE, 1);
         assert_options(ASSERT_WARNING, 0);
         assert_options(ASSERT_BAIL, 0);
@@ -37,7 +40,8 @@ class MPL {
         assert_options(ASSERT_CALLBACK, array("ErrorHandler", "handleAssert"));
     }
 
-    static function init() {
+    public static function init()
+    {
         ErrorHandler::setHandler(new GenericErrorHandler());
         ErrorHandler::setMask(self::get("MPL_ERROR_MASK", E_NONE));
 
@@ -47,29 +51,36 @@ class MPL {
         // self::setAssertOptions();
     }
 
-    static function setLogger($logger) {
+    public static function setLogger($logger)
+    {
         self::$logger = $logger;
     }
 
-    static function log($message, $priority = null) {
-        if (self::$logger === null)
+    public static function log($message, $priority = null)
+    {
+        if (self::$logger === null) {
             return;
+        }
         self::$logger->log($message, $priority);
     }
 
-    static function getRemoteAddr($behindProxy = false) {
+    public static function getRemoteAddr($behindProxy = false)
+    {
         if ($behindProxy && isset($_SERVER["HTTP_X_FORWARDED_FOR"])) {
             $adr = explode(",", $_SERVER["HTTP_X_FORWARDED_FOR"]);
             $adr = array_pop($adr);
-            if ($adr != "unknown")
+            if ($adr != "unknown") {
                 return $adr;
+            }
         }
         return isset($_SERVER["REMOTE_ADDR"]) ?
             $_SERVER["REMOTE_ADDR"] : null;
     }
 
-    static function addIncludePath($path) {
-        set_include_path(sprintf('%s%s%s',
+    public static function addIncludePath($path)
+    {
+        set_include_path(sprintf(
+            '%s%s%s',
             get_include_path(),
             PATH_SEPARATOR,
             $path

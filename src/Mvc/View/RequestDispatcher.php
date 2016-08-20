@@ -19,31 +19,39 @@
 
 namespace Mindbit\Mpl\Mvc\View;
 
-abstract class RequestDispatcher {
-	protected $request;
+abstract class RequestDispatcher
+{
+    protected $request;
 
-	function __construct() {
-		$this->request = $this->createRequest();
-		if (null === $this->request)
-			return;
+    public function __construct()
+    {
+        $this->request = $this->createRequest();
+        if (null === $this->request) {
+            return;
+        }
 
-		$this->request->dispatch();
-	}
+        $this->request->dispatch();
+    }
 
-	function createRequest() {
-		return null;
-	}
+    public function createRequest()
+    {
+        return null;
+    }
 
-	function setRequest($request) {
-		$this->request = $request;
-		if ($this->request instanceof OmRequest)
-			$this->om = $this->request->getOm();
-	}
+    public function setRequest($request)
+    {
+        $this->request = $request;
+        if ($this->request instanceof OmRequest) {
+            $this->om = $this->request->getOm();
+        }
+    }
 
-	function getRequest() {
-		return $this->request;
-	}
+    public function getRequest()
+    {
+        return $this->request;
+    }
 
-	function write() {
-	}
+    public function write()
+    {
+    }
 }
