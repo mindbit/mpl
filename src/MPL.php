@@ -21,6 +21,7 @@ namespace Mindbit\Mpl;
 
 use Mindbit\Mpl\Error\ErrorHandler;
 use Mindbit\Mpl\Error\GenericErrorHandler;
+use Psr\Log\LoggerInterface;
 
 class MPL
 {
@@ -51,17 +52,16 @@ class MPL
         // self::setAssertOptions();
     }
 
-    public static function setLogger($logger)
+    public static function setLogger(LoggerInterface $logger)
     {
         self::$logger = $logger;
     }
 
-    public static function log($message, $priority = null)
+    public static function log($level, $message, array $context = array())
     {
-        if (self::$logger === null) {
-            return;
+        if (self::$logger != null) {
+            self::$logger->log($level, $message, $context);
         }
-        self::$logger->log($message, $priority);
     }
 
     public static function getRemoteAddr($behindProxy = false)

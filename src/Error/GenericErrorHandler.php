@@ -21,7 +21,7 @@ namespace Mindbit\Mpl\Error;
 
 use Mindbit\Mpl\Error\AbstractErrorHandler;
 use Mindbit\Mpl\Util\AsciiTable;
-use Mindbit\Mpl\Deprecated\Version;
+use Psr\Log\LogLevel;
 
 define("EXC_TABLE_WIDTH", 72);
 define("EXC_LEFT_WIDTH", 25);
@@ -298,7 +298,7 @@ class GenericErrorHandler extends AbstractErrorHandler
 
     public function log($message)
     {
-        MPL::log($message);
+        MPL::log(LogLevel::ERROR, $message);
     }
 
     public function logFormatted($message)
