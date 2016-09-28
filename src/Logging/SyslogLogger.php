@@ -9,17 +9,28 @@ class SyslogLogger extends AbstractLogger
     protected $name = LOG_SYSLOG;
     protected $maxLength = 500;
     protected $level = LOG_INFO;
-    
-    function __construct($ident, $maxLength = NULL)
+
+    protected static $levelMapping = array(
+            LogLevel::INFO => LOG_INFO,
+            LogLevel::ALERT => LOG_ALERT,
+            LogLevel::CRITICAL => LOG_CRIT,
+            LogLevel::DEBUG => LOG_DEBUG,
+            LogLevel::EMERGENCY => LOG_EMERG,
+            LogLevel::ERROR => LOG_ERR,
+            LogLevel::NOTICE => LOG_NOTICE,
+            LogLevel::WARNING => LOG_WARNING
+            );
+
+    public function __construct($ident, $maxLength = NULL)
     {
         $this->ident = $ident;
         $this->name = $name;
         if ($maxLength)
             $this->maxLength = $maxLength;
-        
+
         return openlog($this->ident, LOG_PID, $this->name);
     }
-    
+
     /**
      * Logs with an arbitrary level.
      *
@@ -33,28 +44,36 @@ class SyslogLogger extends AbstractLogger
         /* If a priority hasn't been specified, use the default value. */
         if ($level === null) {
             $level = $this->level;
+        } else {
+            $level = $this->translateLevel($level);
         }
-        
+
         /* Abort early if the priority is above the maximum logging level. */
         if ($this->level < $level) {
             return false;
         }
-         
+
         /* Split the string into parts based on our maximum length setting. */
         $parts = str_split($message, $this->maxLength);
         if ($parts === false) {
             return false;
         }
-        
+
         foreach ($parts as $part) {
             if (!syslog($level, $part)) {
                 return false;
             }
         }
-        
+
     }
-    
-    function __destruct()
+
+    protected function translateLevel($level)
+    {
+        if (isset(self::$levelMapping[$level]))
+            return self::$levelMapping[$level];
+    }
+
+    public function __destruct()
     {
         return closelog();
     }
