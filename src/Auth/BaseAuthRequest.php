@@ -19,6 +19,7 @@
 namespace Mindbit\Mpl\Auth;
 
 use Mindbit\Mpl\Mvc\Controller\BaseRequest;
+use Mindbit\Mpl\Session\Session;
 
 /**
  * Generic implementation of user authentication using PHP sessions.
@@ -61,7 +62,7 @@ abstract class BaseAuthRequest extends BaseRequest
 
     public function getSessionUserKey()
     {
-        $selfReflect = new ReflectionClass($this);
+        $selfReflect = new \ReflectionClass($this);
         return $selfReflect->getConstant("SESSION_USER_KEY");
     }
 
