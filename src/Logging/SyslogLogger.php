@@ -7,7 +7,7 @@ use Psr\Log\LogLevel;
 class SyslogLogger extends AbstractLogger
 {
     protected $ident;
-    protected $name = LOG_SYSLOG;
+    protected $facility;
     protected $maxLength = 500;
     protected $level = LOG_INFO;
 
@@ -22,14 +22,14 @@ class SyslogLogger extends AbstractLogger
             LogLevel::WARNING => LOG_WARNING
             );
 
-    public function __construct($ident, $maxLength = NULL)
+    public function __construct($ident, $facility = LOG_USER, $maxLength = NULL)
     {
         $this->ident = $ident;
-        $this->name = $name;
+        $this->facility = $facility;
         if ($maxLength)
             $this->maxLength = $maxLength;
 
-        return openlog($this->ident, LOG_PID, $this->name);
+        return openlog($this->ident, LOG_PID, $this->facility);
     }
 
     /**
