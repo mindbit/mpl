@@ -22,6 +22,7 @@ namespace Mindbit\Mpl\Error;
 use Mindbit\Mpl\Error\AbstractErrorHandler;
 use Mindbit\Mpl\Util\AsciiTable;
 use Psr\Log\LogLevel;
+use Mindbit\Mpl\MPL;
 
 define("EXC_TABLE_WIDTH", 72);
 define("EXC_LEFT_WIDTH", 25);

@@ -2,6 +2,7 @@
 namespace Mindbit\Mpl\Logging;
 
 use Psr\Log\AbstractLogger;
+use Psr\Log\LogLevel;
 
 class SyslogLogger extends AbstractLogger
 {
