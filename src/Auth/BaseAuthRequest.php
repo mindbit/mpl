@@ -20,138 +20,91 @@ namespace Mindbit\Mpl\Auth;
 
 use Mindbit\Mpl\Mvc\Controller\BaseRequest;
 use Mindbit\Mpl\Session\Session;
+use Mindbit\Mpl\Mvc\View\NullResponse;
 
 /**
  * Generic implementation of user authentication using PHP sessions.
  */
 abstract class BaseAuthRequest extends BaseRequest
 {
-    protected $operationType;
+    const ACTION_CHECK      = 'check';
+    const ACTION_LOGIN      = 'login';
+    const ACTION_LOGOUT     = 'logout';
 
-    const OP_LOGIN              = 1;
-    const OP_LOGOUT             = 2;
-    const OP_CHECK              = 3;
+    const DEFAULT_ACTION    = self::ACTION_CHECK;
 
-    const SESSION_USER_KEY      = "user";
-
-    protected $validOperationTypes = array(
-            self::OP_LOGIN,
-            self::OP_LOGOUT,
-            self::OP_CHECK
-            );
+    const SESSION_USER_KEY  = 'user';
 
     /**
-     * No user found in session, and we've just authenticated.
+     * Cached authentication check was successful. User was previously
+     * authenticated.
      */
-    const S_AUTH_SUCCESS        = 1;
+    const STATUS_CACHED     = 1;
 
     /**
-     * User was found in session (previously authenticated).
+     * Cached authentication check failed. Previous authentication data
+     * was not found in session and user needs to authenticate again.
      */
-    const S_AUTH_CACHED         = 2;
+    const STATUS_REQUIRED   = 2;
 
     /**
-     * We tryed to authenticate the user and we failed.
+     * User credentials validation failed. User does not exist or the
+     * supplied credentials were invalid.
      */
-    const S_AUTH_FAILED         = 3;
-
-    /**
-     * Neither user nor credentials were found in request.
-     */
-    const S_AUTH_REQUIRED        = 4;
+    const STATUS_FAILED     = 3;
 
     public function getSessionUserKey()
     {
         $selfReflect = new \ReflectionClass($this);
-        return $selfReflect->getConstant("SESSION_USER_KEY");
+        return $selfReflect->getConstant('SESSION_USER_KEY');
     }
 
-    public function decode()
-    {
-        if (!isset($_REQUEST["operationType"])) {
-            $this->operationType = self::OP_CHECK;
-            return;
-        }
-        if (!in_array($_REQUEST["operationType"], $this->validOperationTypes)) {
-            throw new Exception("Invalid operation type");
-        }
-        $this->operationType = $_REQUEST["operationType"];
-    }
-
-    public function dispatch()
+    public function handle()
     {
         //Session::setLocale();
         session_start();
+        parent::handle();
 
-        $this->decode();
-        switch ($this->operationType) {
-            case self::OP_LOGIN:
-                $this->doLogin();
-                break;
-            case self::OP_LOGOUT:
-                $this->doLogout();
-                break;
-            case self::OP_CHECK:
-                $this->doCheck();
-                break;
+        if ($this->status == self::STATUS_FAILED || $this->status == self::STATUS_REQUIRED) {
+            exit();
         }
     }
 
-    public function doCheck()
+    protected function actionCheck()
     {
         $key = $this->getSessionUserKey();
         if (isset($_SESSION[$key])) {
             Session::setUser($_SESSION[$key]);
-            $this->setState(self::S_AUTH_CACHED);
+            $this->setStatus(self::STATUS_CACHED);
+            $this->response = new NullResponse($this);
             return;
         }
-        $this->setState(self::S_AUTH_REQUIRED);
+        $this->setStatus(self::STATUS_REQUIRED);
     }
 
-    public function doLogin()
+    protected function actionLogin()
     {
-        if (($user = $this->validateUser()) === null) {
-            $this->setState(self::S_AUTH_REQUIRED);
-            return;
-        }
-
-        if ($user === false) {
-            $this->setState(self::S_AUTH_FAILED);
+        $user = $this->authenticateUser();
+        if (!$user) {
+            $this->setStatus(self::STATUS_FAILED);
             return;
         }
 
         Session::setUser($user);
         $_SESSION[$this->getSessionUserKey()] = $user;
-        $this->setState(self::S_AUTH_SUCCESS);
+        $this->setStatus(self::STATUS_SUCCESS);
+        $this->response = new NullResponse($this);
     }
 
-    public function doLogout()
+    protected function actionLogout()
     {
         unset($_SESSION[$this->getSessionUserKey()]);
-        $this->setState(self::S_AUTH_REQUIRED);
+        $this->setStatus(self::STATUS_REQUIRED);
     }
 
     /**
-     * Check for credentials in request and try to authenticate user.
-     *
-     * This should return a valid user class instance or boolean false
-     * if authentication failed.
-     *
-     * Additionally, a return value of null indicates that credentials
-     * were not found in request.
+     * Get user credentials from $_REQUEST and authenticate user.
+     * @return object
      */
-    public function validateUser()
-    {
-        if (!isset($_REQUEST["username"]) || !isset($_REQUEST["password"])) {
-            return null;
-        }
-        $u = $this->authenticateUser($_REQUEST["username"], $_REQUEST["password"]);
-        return is_object($u) ? $u : false;
-    }
-
-    /**
-     * Typically, this should call the authenticate() method of your
-     * user class.
-     */
-    abstract public function authenticateUser($username, $password);
+    abstract protected function authenticateUser();
 }
