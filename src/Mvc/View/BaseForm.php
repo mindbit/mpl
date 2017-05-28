@@ -20,10 +20,9 @@
 namespace Mindbit\Mpl\Mvc\View;
 
 use Mindbit\Mpl\Mvc\Controller\OmRequest;
-use Mindbit\Mpl\Mvc\View\RequestDispatcher;
 use Mindbit\Mpl\Util\HTML;
 
-abstract class BaseForm extends RequestDispatcher
+abstract class BaseForm extends BaseResponse
 {
     // constants for coding various doctypes
     // bits 0 to 7 are for minor version, 8 to 15 for major
@@ -69,9 +68,9 @@ abstract class BaseForm extends RequestDispatcher
     abstract public function getTitle();
     abstract public function getFormAttributes();
 
-    public function __construct()
+    public function __construct($request)
     {
-        parent::__construct();
+        parent::__construct($request);
 
         if ($this->request instanceof OmRequest) {
             $this->om = $this->request->getOm();
@@ -101,7 +100,7 @@ abstract class BaseForm extends RequestDispatcher
         return HTML::tag($name, $attr, $close);
     }
 
-    public function write()
+    public function send()
     {
         $doctype = $this->getDoctype();
         if (null !== $doctype) {

@@ -21,23 +21,73 @@ namespace Mindbit\Mpl\Mvc\Controller;
 
 abstract class BaseRequest
 {
-    protected $state;
-    protected $err;
+    const VALID_ACTION      = '/^\w+$/';
+    const DEFAULT_ACTION    = null;
 
-    abstract public function dispatch();
+    const STATUS_SUCCESS    = 0;
 
-    public function getState()
+    protected $action;
+    protected $response;
+    protected $errors;
+    protected $status = self::STATUS_SUCCESS;
+
+    public function handle()
     {
-        return $this->state;
-    }
+        $this->action = $this->deriveAction();
+        if (!preg_match(self::VALID_ACTION, $this->action)) {
+            throw new InvalidActionException($this->action);
+        }
 
-    public function setState($state)
-    {
-        $this->state = $state;
+        $this->response = $this->createResponse();
+
+        $actionMethod = 'action' . ucfirst($this->action);
+        if (!method_exists($this, $actionMethod)) {
+            throw new UndefinedActionException($this->action);
+        }
+        call_user_func(array($this, $actionMethod));
+
+        $this->response->send();
     }
 
     public function getErrors()
     {
-        return $this->err;
+        return $this->errors;
+    }
+
+    /**
+     * Examine the request data and derive the action
+     *
+     * @return string
+     */
+    protected function deriveAction()
+    {
+        if (isset($_REQUEST['action'])) {
+            return $_REQUEST['action'];
+        }
+
+        $selfReflect = new \ReflectionClass($this);
+        $action = $selfReflect->getConstant('DEFAULT_ACTION');
+        if (!$action) {
+            throw new InvalidActionException();
+        }
+
+        return $action;
+    }
+
+    /**
+     * Instantiate the response class
+     *
+     * @return \Mindbit\Mpl\Mvc\View\BaseResponse
+     */
+    abstract protected function createResponse();
+
+    public function getStatus()
+    {
+        return $this->status;
+    }
+
+    protected function setStatus($status)
+    {
+        $this->status = $status;
     }
 }

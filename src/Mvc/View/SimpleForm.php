@@ -20,7 +20,6 @@
 namespace Mindbit\Mpl\Mvc\View;
 
 use Mindbit\Mpl\Mvc\View\BaseForm;
-use Mindbit\Mpl\Locale\Locale;
 
 abstract class SimpleForm extends BaseForm
 {

@@ -19,31 +19,25 @@
 
 namespace Mindbit\Mpl\Mvc\View;
 
-abstract class RequestDispatcher
+abstract class BaseResponse
 {
+    /**
+     * @var \Mindbit\Mpl\Mvc\Controller\BaseRequest
+     */
     protected $request;
 
-    public function __construct()
-    {
-        $this->request = $this->createRequest();
-        if (null === $this->request) {
-            return;
-        }
-
-        $this->request->dispatch();
-    }
-
-    public function createRequest()
-    {
-        return null;
-    }
-
-    public function setRequest($request)
+    /**
+     * @param \Mindbit\Mpl\Mvc\Controller\BaseRequest $request
+     */
+    public function __construct($request)
     {
         $this->request = $request;
+
+        /*
         if ($this->request instanceof OmRequest) {
             $this->om = $this->request->getOm();
         }
+        */
     }
 
     public function getRequest()
@@ -51,7 +45,5 @@ abstract class RequestDispatcher
         return $this->request;
     }
 
-    public function write()
-    {
-    }
+    abstract public function send();
 }
