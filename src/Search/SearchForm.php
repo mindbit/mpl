@@ -20,6 +20,7 @@
 namespace Mindbit\Mpl\Search;
 
 use Mindbit\Mpl\Mvc\View\BaseForm;
+use Mindbit\Mpl\Util\HTML;
 
 abstract class SearchForm extends BaseForm
 {
