@@ -28,7 +28,7 @@ class Block
     const PREG_TAG      = '/(\r?\n?[\t ]*)<!--\s*(BEGIN|END|COMMENT)\s*(.*?)\s*-->/';
     const PREG_BEGIN    = '/^([\w.]+)(?:\s+\[(hidden)\]|())$/';
     const PREG_END      = '/^[\w.]+$/';
-    const PREG_VAR      = '/\{([\w.]+)\}/';
+    const PREG_VAR      = '/\{([\w.]+)(?:|:([heurj]))\}/';
 
     /**
      * Block name, as defined by BEGIN and END tags
@@ -46,6 +46,8 @@ class Block
      *  NODE_TEXT       The actual text that will be copied verbatim to the output
      *  NODE_VAR        The variable name
      *  NODE_BLOCK      The child Block object
+     *
+     * For NODE_VAR nodes, an additional filter is stored at index 2.
      *
      * @var array
      */
@@ -175,6 +177,7 @@ class Block
             $matchOffset = $m[0][1];
             $matchLength = strlen($m[0][0]);
             $varName = $m[1][0];
+            $filter = isset($m[2]) ? $m[2][0] : null;
 
             if ($matchOffset > $globalOffset) {
                 $nodes[] = array(
@@ -184,7 +187,7 @@ class Block
             }
             $globalOffset = $matchOffset + $matchLength;
 
-            $nodes[] = array(self::NODE_VAR, $varName);
+            $nodes[] = array(self::NODE_VAR, $varName, $filter);
         }
 
         if ($globalOffset < strlen($str)) {
