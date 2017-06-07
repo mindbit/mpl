@@ -30,10 +30,46 @@ class Block
     const PREG_END      = '/^[\w.]+$/';
     const PREG_VAR      = '/\{([\w.]+)\}/';
 
+    /**
+     * Block name, as defined by BEGIN and END tags
+     * @var string
+     */
     protected $name;
+
+    /**
+     * List of template nodes
+     *
+     * Each element is an array containing the node type at index 0 and
+     * the node data at index 1. The node type is one of the NODE_ constants.
+     *
+     * The node data depends on the node type:
+     *  NODE_TEXT       The actual text that will be copied verbatim to the output
+     *  NODE_VAR        The variable name
+     *  NODE_BLOCK      The child Block object
+     *
+     * @var array
+     */
     protected $nodes = array();
+
+    /**
+     * The parent Block object; null for the root block
+     * @var Block
+     */
     protected $parent;
+
+    /**
+     * Index of descendent nodes at any level
+     *
+     * Only populated for the root block.
+     *
+     * @var array
+     */
     protected $index = array();
+
+    /**
+     * Flag that indicates whether the block will be included in the output
+     * @var bool
+     */
     protected $hidden = false;
 
     protected function __construct($name = null)
