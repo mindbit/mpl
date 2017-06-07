@@ -74,6 +74,23 @@ class Block
      */
     protected $hidden = false;
 
+    /**
+     * Values of block variables that are used for expansion
+     *
+     * @var array
+     */
+    protected $variables = array();
+
+    /**
+     * List of rendered instances of this block
+     *
+     * Each rendered instance is the text that results from rendering the current block and all
+     * visible descendent blocks at any level.
+     *
+     * @var array
+     */
+    protected $renderedTexts = array();
+
     protected function __construct($name = null)
     {
         $this->name = $name;
@@ -195,5 +212,97 @@ class Block
         }
 
         return $nodes;
+    }
+
+    public function setVariable($name, $value)
+    {
+        $this->variables[$name] = $value;
+        return $this;
+    }
+
+    public function setVariables($data)
+    {
+        $this->variables = $data + $this->variables;
+        return $this;
+    }
+
+    public function getBlock($block)
+    {
+        return isset($this->index[$block]) ? $this->index[$block] : null;
+    }
+
+    public function show()
+    {
+        for ($block = $this; $block != null; $block = $block->parent) {
+            $block->hidden = false;
+        }
+
+        $text = '';
+        foreach ($this->nodes as $node) {
+            if ($node[0] == self::NODE_TEXT) {
+                $text .= $node[1];
+                continue;
+            }
+
+            if ($node[0] == self::NODE_VAR) {
+                $text .= $this->expandVariable($node[1], $node[2]);
+                continue;
+            }
+
+            if ($node[0] != self::NODE_BLOCK) {
+                throw new \Exception('Invalid node type ' . $node[0]);
+            }
+
+            /* @var $block Block */
+            $block = $node[1];
+
+            if ($block->hidden) {
+                continue;
+            }
+
+            if (empty($block->renderedTexts)) {
+                $block->show();
+            }
+
+            $text .= implode('', $block->renderedTexts);
+            $block->renderedTexts = array();
+        }
+
+        $this->renderedTexts[] = $text;
+    }
+
+    public function getRenderedText()
+    {
+        if (empty($this->renderedTexts)) {
+            $this->show();
+        }
+
+        return array_shift($this->renderedTexts);
+    }
+
+    protected function expandVariable($name, $filter)
+    {
+        $value = '';
+
+        for ($block = $this; $block != null; $block = $block->parent) {
+            if (isset($block->variables[$name])) {
+                $value = $block->variables[$name];
+                break;
+            }
+        }
+
+        // TODO implement filter parameter customization through class properties
+        switch ($filter) {
+            case 'h':
+                return htmlspecialchars($valuea);
+            case 'e':
+                return htmlentities($value);
+            case 'u':
+                return urlencode($value);
+            case 'r':
+                return rawurlencode($value);
+            default:
+                return $value;
+        }
     }
 }
