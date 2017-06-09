@@ -96,6 +96,14 @@ class Block
         $this->name = $name;
     }
 
+    /**
+     * Parse a string that contains Template markup into Block objects
+     *
+     * @param string $str
+     * @param bool $strict
+     * @throws \Exception
+     * @return \Mindbit\Mpl\Template\Block
+     */
     public static function parse($str, $strict = false)
     {
         $root = new Block();
@@ -226,11 +234,24 @@ class Block
         return $this;
     }
 
-    public function getBlock($block)
+    public function getBlock($name)
     {
-        return isset($this->index[$block]) ? $this->index[$block] : null;
+        return isset($this->index[$name]) ? $this->index[$name] : null;
     }
 
+    /**
+     * Create a rendered instance of this block and save it on the rendered
+     * instances stack.
+     *
+     * Calling this method consumes all rendered instances of all sub-blocks. If any
+     * of the sub-blocks has never been rendered before (or all its rendered
+     * instances have been already consumed), the sub-block will be rendered
+     * implicitly. This does not apply to hidden sub-blocks, which will be ignored
+     * completely.
+     *
+     * @throws \Exception
+     * @return \Mindbit\Mpl\Template\Block
+     */
     public function show()
     {
         for ($block = $this; $block != null; $block = $block->parent) {
@@ -269,8 +290,22 @@ class Block
         }
 
         $this->renderedTexts[] = $text;
+        return $this;
     }
 
+    /**
+     * Get a rendered instance of this block.
+     *
+     * If this block has been rendered multiple times (by calling the show() method),
+     * this method returns the first rendered instance and pops it off the stack of
+     * rendered instances.
+     *
+     * If this block has never been rendered (or has been rendered but all instances
+     * have been consumed by previously calling this method), the show() method will
+     * be called implicitly in order to produce a rendered instance.
+     *
+     * @return string
+     */
     public function getRenderedText()
     {
         if (empty($this->renderedTexts)) {
@@ -292,9 +327,10 @@ class Block
         }
 
         // TODO implement filter parameter customization through class properties
+        // TODO implement 'j' filter
         switch ($filter) {
             case 'h':
-                return htmlspecialchars($valuea);
+                return htmlspecialchars($value);
             case 'e':
                 return htmlentities($value);
             case 'u':
