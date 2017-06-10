@@ -103,6 +103,17 @@ class Template
         return new Template(Block::parse($str, $strict));
     }
 
+    /**
+     * Replace the contents of a given block with another template
+     *
+     * @param string $name
+     * @param Template $template
+     */
+    public function replaceBlock($name, $template)
+    {
+        $this->rootBlock->getBlock($name)->replace($template->rootBlock);
+    }
+
     public function getRenderedText()
     {
         return $this->rootBlock->getRenderedText();

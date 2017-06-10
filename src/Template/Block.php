@@ -26,6 +26,7 @@ class Block
     const NODE_BLOCK    = 3;
 
     const PREG_TAG      = '/(\r?\n?[\t ]*)<!--\s*(BEGIN|END|COMMENT)\s*(.*?)\s*-->/';
+    const PREG_TSPACE   = '/(\r?\n?)[\t ]*$/';
     const PREG_BEGIN    = '/^([\w.]+)(?:\s+\[(hidden)\]|())$/';
     const PREG_END      = '/^[\w.]+$/';
     const PREG_VAR      = '/\{([\w.]+)(?:|:([heurj]))\}/';
@@ -91,6 +92,8 @@ class Block
      */
     protected $renderedTexts = array();
 
+    protected $trailingCrLf = '';
+
     protected function __construct($name = null)
     {
         $this->name = $name;
@@ -120,14 +123,16 @@ class Block
         foreach ($matches as $m) {
             $matchOffset = $m[0][1];
             $matchLength = strlen($m[0][0]);
-            $blockOffset = $matchOffset + strlen($m[1][0]);
-            $blockLength = $matchLength - strlen($m[1][0]);
+            $leadingSpace = $m[1][0];
+            $blockOffset = $matchOffset + strlen($leadingSpace);
+            $blockLength = $matchLength - strlen($leadingSpace);
             $blockKeyword = $m[2][0];
             $blockArgs = $m[3][0];
 
             if ($strict) {
                 $matchOffset = $blockOffset;
                 $matchLength = $blockLength;
+                $leadingSpace = '';
             }
 
             if ($matchOffset > $globalOffset) {
@@ -169,6 +174,7 @@ class Block
                 if ($current->name != $blockArgs) {
                     throw new \Exception('Block END mismatch (expected ' . $current->name . ', found ' . $blockArgs . ' at ' . $blockOffset);
                 }
+                $current->trailingCrLf = preg_replace(self::PREG_TSPACE, '$1', $leadingSpace);
                 $current = $current->parent;
             }
         }
@@ -293,6 +299,12 @@ class Block
         return $this;
     }
 
+    public function hide()
+    {
+        $this->hidden = true;
+        $this->renderedTexts = array();
+    }
+
     /**
      * Get a rendered instance of this block.
      *
@@ -313,6 +325,57 @@ class Block
         }
 
         return array_shift($this->renderedTexts);
+    }
+
+    /**
+     * Replace the contents of this block with the contents of a different block
+     *
+     * This is typically used by the Template class to replace a sub-block of the
+     * current template with the contents of an external template.
+     *
+     * @param Block $block
+     */
+    public function replace($block)
+    {
+        for ($root = $this; $root->parent != null; $root = $root->parent);
+
+        foreach ($block->index as $name => $ref) {
+            if (isset($root->index[$name])) {
+                throw new \Exception('Duplicate block ' . $name);
+            }
+            $root->index[$name] = $ref;
+        }
+
+        $this->nodes = $block->nodes;
+        foreach ($this->nodes as $key => $node) {
+            if ($node[0] == self::NODE_BLOCK) {
+                $this->nodes[$key][1]->parent = $this;
+            }
+        }
+
+        $this->renderedTexts = array();
+
+        // Prepend trailing space from original node. Note that in strict mode,
+        // 'trailingCrLf' is always an empty string (see the code in the parse()
+        // method), so no adjustments will be made.
+
+        if (!strlen($this->trailingCrLf) || empty($this->nodes)) {
+            return $this;
+        }
+
+        if ($this->nodes[0][0] == self::NODE_TEXT) {
+            $this->nodes[0][1] = $this->trailingCrLf . $this->nodes[0][1];
+        } elseif ($this->nodes[0][0] == self::NODE_VAR) {
+            array_unshift($this->nodes, array(self::NODE_TEXT, $this->trailingCrLf));
+        }
+
+        // Remove trailing space, as it would have been "swallowed" by the end
+        // marker of this block.
+
+        $node =& $this->nodes[count($this->nodes) - 1];
+        if ($node[0] == self::NODE_TEXT) {
+            $node[1] = preg_replace(self::PREG_TSPACE, '', $node[1]);
+        }
     }
 
     protected function expandVariable($name, $filter)
