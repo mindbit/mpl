@@ -26,7 +26,7 @@ class Block
     const NODE_BLOCK    = 3;
 
     const PREG_TAG      = '/(\r?\n?[\t ]*)<!--\s*(BEGIN|END|COMMENT)\s*(.*?)\s*-->/';
-    const PREG_TSPACE   = '/(\r?\n?)[\t ]*$/';
+    const PREG_PADDING  = '/(\r?\n?)[\t ]*$/';
     const PREG_BEGIN    = '/^([\w.]+)(?:\s+\[(hidden)\]|())$/';
     const PREG_END      = '/^[\w.]+$/';
     const PREG_VAR      = '/\{([\w.]+)(?:|:([heurj]))\}/';
@@ -92,7 +92,7 @@ class Block
      */
     protected $renderedTexts = array();
 
-    protected $trailingCrLf = '';
+    protected $padding = '';
 
     protected function __construct($name = null)
     {
@@ -123,16 +123,16 @@ class Block
         foreach ($matches as $m) {
             $matchOffset = $m[0][1];
             $matchLength = strlen($m[0][0]);
-            $leadingSpace = $m[1][0];
-            $blockOffset = $matchOffset + strlen($leadingSpace);
-            $blockLength = $matchLength - strlen($leadingSpace);
+            $padding = $m[1][0];
+            $blockOffset = $matchOffset + strlen($padding);
+            $blockLength = $matchLength - strlen($padding);
             $blockKeyword = $m[2][0];
             $blockArgs = $m[3][0];
 
             if ($strict) {
                 $matchOffset = $blockOffset;
                 $matchLength = $blockLength;
-                $leadingSpace = '';
+                $padding = '';
             }
 
             if ($matchOffset > $globalOffset) {
@@ -174,7 +174,7 @@ class Block
                 if ($current->name != $blockArgs) {
                     throw new \Exception('Block END mismatch (expected ' . $current->name . ', found ' . $blockArgs . ' at ' . $blockOffset);
                 }
-                $current->trailingCrLf = preg_replace(self::PREG_TSPACE, '$1', $leadingSpace);
+                $current->padding = $padding;
                 $current = $current->parent;
             }
         }
@@ -335,7 +335,7 @@ class Block
      *
      * @param mixed $block
      */
-    public function replace($block)
+    public function replace($block, $trimPadding = true)
     {
         if (is_string($block)) {
             $node = array(self::NODE_TEXT, $block);
@@ -366,14 +366,19 @@ class Block
         // 'trailingCrLf' is always an empty string (see the code in the parse()
         // method), so no adjustments will be made.
 
-        if (!strlen($this->trailingCrLf) || empty($this->nodes)) {
+        if (!strlen($this->padding) || empty($this->nodes)) {
             return $this;
         }
 
+        $padding = $this->padding;
+        if ($trimPadding) {
+            $padding = preg_replace(self::PREG_PADDING, '$1', $padding);
+        }
+
         if ($this->nodes[0][0] == self::NODE_TEXT) {
-            $this->nodes[0][1] = $this->trailingCrLf . $this->nodes[0][1];
+            $this->nodes[0][1] = $padding . $this->nodes[0][1];
         } elseif ($this->nodes[0][0] == self::NODE_VAR) {
-            array_unshift($this->nodes, array(self::NODE_TEXT, $this->trailingCrLf));
+            array_unshift($this->nodes, array(self::NODE_TEXT, $padding));
         }
 
         // Remove trailing space, as it would have been "swallowed" by the end
@@ -381,8 +386,13 @@ class Block
 
         $node =& $this->nodes[count($this->nodes) - 1];
         if ($node[0] == self::NODE_TEXT) {
-            $node[1] = preg_replace(self::PREG_TSPACE, '', $node[1]);
+            $node[1] = preg_replace(self::PREG_PADDING, '', $node[1]);
         }
+    }
+
+    public function getPadding()
+    {
+        return $this->padding;
     }
 
     protected function expandVariable($name, $filter)
