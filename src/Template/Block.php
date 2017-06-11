@@ -337,7 +337,8 @@ class Block
      */
     public function replace($block)
     {
-        for ($root = $this; $root->parent != null; $root = $root->parent);
+        for ($root = $this; $root->parent != null; $root = $root->parent) {
+        }
 
         foreach ($block->index as $name => $ref) {
             if (isset($root->index[$name])) {
