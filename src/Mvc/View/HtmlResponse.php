@@ -159,6 +159,63 @@ abstract class HtmlResponse extends BaseResponse
         return $string;
     }
 
+    /**
+     * @param string $name
+     * @param array $attr
+     * @param mixed $innerText
+     * @return string
+     */
+    public function tag($name, $attr = array(), $innerText = null, $close = null)
+    {
+        if ($close === null) {
+            $close = $this->doctype & self::DOCTYPE_XHTML;
+        }
+
+        $string = '<' . $name . $this->attr($attr);
+
+        if (is_string($innerText)) {
+            return $string . '>' . $innerText . '</' . $name . '>';
+        }
+
+        if (($this->doctype & self::DOCTYPE_XHTML) && $close) {
+            return $string . '/>';
+        }
+
+        return $string . '>';
+    }
+
+    public function options($options, $groupLabels = array())
+    {
+        $ret = array();
+        $group = null;
+        foreach ($options as $value => $attr) {
+            if (@$attr['group'] !== $group && $group !== null) {
+                $ret[] = '</optgroup>';
+            }
+            if (isset($attr['group']) && $attr['group'] != $group) {
+                $group = $attr['group'];
+                $label = isset($groupLabels[$group]) ? $groupLabels[$group] : $group;
+                $ret[] = $this->tag('optgroup', array('label' => $label), null, false);
+            } else {
+                $group = @$attr['group'];
+            }
+            unset($attr['group']);
+            if (@$attr['selected']) {
+                $attr['selected'] = $this->doctype & self::DOCTYPE_XHTML ? 'selected' : null;
+            } else {
+                unset($attr['selected']);
+            }
+            $text = $attr['text'];
+            unset($attr['text']);
+            $attr['value'] = $this->entities($value);
+            $ret[] = $this->tag('option', $attr, $text);
+        }
+        if ($group !== null) {
+            $ret[] = '</optgroup>';
+        }
+        return $ret;
+    }
+
     public function send()
     {
         $doctype = self::$doctypeMap[$this->doctype];
@@ -192,5 +249,15 @@ abstract class HtmlResponse extends BaseResponse
         $block = $this->template->getBlock(self::BLOCK_JSREF);
         $block->setVariable(self::VAR_JSREF_SRC, $url);
         $block->show();
+    }
+
+    public function addSelect($block, $options, $groupLabels = array())
+    {
+        if (is_string($block)) {
+            $block = $this->template->getBlock($block);
+        }
+        $padding = $block->getPadding();
+        $text = implode($padding, $this->options($options, $groupLabels));
+        $block->replace($text, false);
     }
 }
