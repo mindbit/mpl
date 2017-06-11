@@ -41,6 +41,10 @@ class Template
 
     public static function setLoadPath($loadPath)
     {
+        if (is_array($loadPath)) {
+            $loadPath = implode(PATH_SEPARATOR, $loadPath);
+        }
+
         self::$loadPath = $loadPath;
     }
 
