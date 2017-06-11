@@ -333,10 +333,16 @@ class Block
      * This is typically used by the Template class to replace a sub-block of the
      * current template with the contents of an external template.
      *
-     * @param Block $block
+     * @param mixed $block
      */
     public function replace($block)
     {
+        if (is_string($block)) {
+            $node = array(self::NODE_TEXT, $block);
+            $block = new Block();
+            $block->nodes[] = $node;
+        }
+
         for ($root = $this; $root->parent != null; $root = $root->parent) {
         }
 

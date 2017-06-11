@@ -111,11 +111,14 @@ class Template
      * Replace the contents of a given block with another template
      *
      * @param string $name
-     * @param Template $template
+     * @param mixed $object
      */
-    public function replaceBlock($name, $template)
+    public function replaceBlock($name, $object)
     {
-        $this->rootBlock->getBlock($name)->replace($template->rootBlock);
+        if ($object instanceof Template) {
+            $object = $object->rootBlock;
+        }
+        $this->rootBlock->getBlock($name)->replace($object);
     }
 
     public function getRenderedText()
