@@ -21,6 +21,7 @@ namespace Mindbit\Mpl\Mvc\Controller;
 
 abstract class BaseRequest
 {
+    const ACTION_KEY        = 'action';
     const VALID_ACTION      = '/^\w+$/';
     const DEFAULT_ACTION    = null;
 
@@ -61,8 +62,8 @@ abstract class BaseRequest
      */
     protected function deriveAction()
     {
-        if (isset($_REQUEST['action'])) {
-            return $_REQUEST['action'];
+        if (isset($_REQUEST[static::ACTION_KEY])) {
+            return $_REQUEST[static::ACTION_KEY];
         }
 
         if (!static::DEFAULT_ACTION) {
