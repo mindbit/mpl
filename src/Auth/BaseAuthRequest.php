@@ -55,8 +55,7 @@ abstract class BaseAuthRequest extends BaseRequest
 
     public function getSessionUserKey()
     {
-        $selfReflect = new \ReflectionClass($this);
-        return $selfReflect->getConstant('SESSION_USER_KEY');
+        return static::SESSION_USER_KEY;
     }
 
     public function handle()

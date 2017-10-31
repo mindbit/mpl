@@ -44,7 +44,7 @@ abstract class BaseRequest
         if (!method_exists($this, $actionMethod)) {
             throw new UndefinedActionException($this->action);
         }
-        call_user_func(array($this, $actionMethod));
+        $this->$actionMethod();
 
         $this->response->send();
     }
@@ -65,13 +65,11 @@ abstract class BaseRequest
             return $_REQUEST['action'];
         }
 
-        $selfReflect = new \ReflectionClass($this);
-        $action = $selfReflect->getConstant('DEFAULT_ACTION');
-        if (!$action) {
+        if (!static::DEFAULT_ACTION) {
             throw new InvalidActionException();
         }
 
-        return $action;
+        return static::DEFAULT_ACTION;
     }
 
     /**
