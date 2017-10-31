@@ -122,7 +122,13 @@ abstract class HtmlResponse extends BaseResponse
         // the parent constructor.
         $this->template = Template::load(self::TEMPLATE_HTML_DOC);
         $this->template->setVariable(self::VAR_FORM_METHOD, self::METHOD_POST);
-        $this->template->setVariable(self::VAR_FORM_ACTION, $_SERVER['PHP_SELF']);
+
+        // By default we repost to the request URI. Note that PHP_SELF (i.e. the script name)
+        // is not what we want because typically we have rewrite rules in the web server
+        // configuration.
+        // FIXME: REQUEST_URI doesn't work in all environments (nginx?, apache+fcgi?)
+        // FIXME: what about external query parameters that we may need to preserve?
+        $this->template->setVariable(self::VAR_FORM_ACTION, $_SERVER['REQUEST_URI']);
 
         if ($this->request instanceof OmRequest) {
             $this->om = $this->request->getOm();
