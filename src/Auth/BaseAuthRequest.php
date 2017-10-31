@@ -31,6 +31,11 @@ abstract class BaseAuthRequest extends BaseRequest
     const ACTION_LOGIN      = 'login';
     const ACTION_LOGOUT     = 'logout';
 
+    /*
+     * Override default action key to avoid interferring with any
+     * overlapping controller.
+     */
+    const ACTION_KEY        = 'auth';
     const DEFAULT_ACTION    = self::ACTION_CHECK;
 
     const SESSION_USER_KEY  = 'user';
