@@ -70,6 +70,7 @@ abstract class BaseAuthRequest extends BaseRequest
         parent::handle();
 
         if ($this->status == self::STATUS_FAILED || $this->status == self::STATUS_REQUIRED) {
+            $this->response->send();
             exit();
         }
     }
@@ -80,7 +81,6 @@ abstract class BaseAuthRequest extends BaseRequest
         if (isset($_SESSION[$key])) {
             Session::setUser($_SESSION[$key]);
             $this->setStatus(self::STATUS_CACHED);
-            $this->response = new NullResponse($this);
             return;
         }
         $this->setStatus(self::STATUS_REQUIRED);
@@ -97,7 +97,6 @@ abstract class BaseAuthRequest extends BaseRequest
         Session::setUser($user);
         $_SESSION[$this->getSessionUserKey()] = $user;
         $this->setStatus(self::STATUS_SUCCESS);
-        $this->response = new NullResponse($this);
     }
 
     protected function actionLogout()

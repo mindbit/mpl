@@ -46,8 +46,11 @@ abstract class BaseRequest
             throw new UndefinedActionException($this->action);
         }
         $this->$actionMethod();
+    }
 
-        $this->response->send();
+    public function getResponse()
+    {
+        return $this->response;
     }
 
     public function getErrors()
