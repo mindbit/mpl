@@ -364,6 +364,7 @@ class Block
             }
         }
 
+        $this->variables = $block->variables;
         $this->renderedTexts = array();
 
         // Prepend trailing space from original node. Note that in strict mode,
