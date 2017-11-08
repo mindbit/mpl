@@ -1,1 +1,6 @@
-.*.swp
+*.swp
+/.buildpath
+/.project
+/.settings
+/composer.lock
+/vendor
