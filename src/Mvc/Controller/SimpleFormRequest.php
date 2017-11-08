@@ -19,16 +19,16 @@
 
 namespace Mindbit\Mpl\Mvc\Controller;
 
-use Mindbit\Mpl\Mvc\Controller\OmRequest;
-
 abstract class SimpleFormRequest extends OmRequest
 {
-    const OPERATION_NEW = 5;
+    const ACTION_NEW        = 'new';
 
-    const STATE_ADD = 1;
-    const STATE_UPDATE = 2;
+    const STATUS_ADD        = self::ACTION_ADD;
+    const STATUS_UPDATE     = self::ACTION_UPDATE;
 
+    /* FIXME
     protected $prefixDataMapping = array();
+    */
 
     /**
      * Return an array that maps request field names to OM field names.
@@ -41,6 +41,7 @@ abstract class SimpleFormRequest extends OmRequest
         return array();
     }
 
+    /* FIXME
     protected function prefixRequestDataMapping($prefix)
     {
         if (isset($this->prefixDataMapping[$prefix])) {
@@ -53,6 +54,7 @@ abstract class SimpleFormRequest extends OmRequest
         $this->prefixDataMapping[$prefix] = $map;
         return $map;
     }
+    */
 
     protected function getRequestData()
     {
@@ -60,82 +62,71 @@ abstract class SimpleFormRequest extends OmRequest
         $map = $this->getRequestDataMapping();
 
         foreach ($this->omFieldNames as $omField) {
-            $reqField = isset($map[$omField]) ? $map[$omField] : $omField;
-            if (isset($_REQUEST[$reqField])) {
-                $data[$omField] = $_REQUEST[$reqField];
+            $requestField = isset($map[$omField]) ?: $omField;
+            if (isset($_REQUEST[$requestField])) {
+                $data[$omField] = $_REQUEST[$requestField];
             }
         }
 
         return $data;
     }
 
-    protected function decode()
+    protected function actionFetch()
+    {
+        $this->om->setPrimaryKey($_REQUEST[$this->getPrimaryKeyFieldName()]);
+        $this->om = $this->om->buildPkeyCriteria()->findOne();
+    }
+
+    protected function actionNew()
+    {
+    }
+
+    protected function deriveAction()
+    {
+        if (isset($_REQUEST[static::ACTION_KEY])) {
+            return $_REQUEST[static::ACTION_KEY];
+        }
+
+        return isset($_REQUEST[$this->getPrimaryKeyFieldName()]) ? self::ACTION_FETCH : self::ACTION_NEW;
+    }
+
+    public function getPrimaryKeyFieldName()
+    {
+        $pk = parent::getPrimaryKeyFieldName();
+        $map = $this->getRequestDataMapping();
+        return @$map[$pk] ?: $pk;
+    }
+
+    public function handle()
     {
         $this->data = $this->getRequestData();
+        parent::handle();
 
-        if (isset($_REQUEST['__id'])) {
-            $this->operationType = self::OPERATION_FETCH;
-            return;
-        }
-
-        if (isset($_REQUEST['__update']) && $_REQUEST['__update']) {
-            $this->operationType = self::OPERATION_UPDATE;
-            return;
-        }
-
-        if (isset($_REQUEST['__add']) && $_REQUEST['__add']) {
-            $this->operationType = self::OPERATION_ADD;
-            return;
-        }
-
-        if (isset($_REQUEST['__remove'])) {
-            $this->operationType = self::OPERATION_REMOVE;
-            return;
-        }
-
-        if (isset($_REQUEST['__new'])) {
-            $this->operationType = self::OPERATION_NEW;
-            return;
-        }
-    }
-
-    protected function doFetch()
-    {
-        $this->om = $this->omPeer->retrieveByPk($_REQUEST['__id']);
-    }
-
-    protected function doNew()
-    {
-    }
-
-    public function dispatch()
-    {
-        try {
-            parent::dispatch();
-            if ($this->operationType == self::OPERATION_NEW) {
-                $this->doNew();
-            }
-        } catch (Exception $e) {
-            $this->handleOmException($e);
-        }
-
-        switch ($this->operationType) {
-            case self::OPERATION_NEW:
-            case self::OPERATION_REMOVE:
-                $this->setState(self::STATE_ADD);
+        switch ($this->action) {
+            case self::ACTION_NEW:
+            case self::ACTION_REMOVE:
+                $this->setStatus(self::STATUS_ADD);
                 break;
-            case self::OPERATION_ADD:
-                $this->setState(empty($this->err) ? self::STATE_UPDATE: self::STATE_ADD);
+            case self::ACTION_ADD:
+                $this->setStatus(empty($this->errors) ? self::STATUS_UPDATE: self::STATUS_ADD);
                 break;
-            case self::OPERATION_FETCH:
-            case self::OPERATION_UPDATE:
-                $this->setState(self::STATE_UPDATE);
+            case self::ACTION_FETCH:
+            case self::ACTION_UPDATE:
+                $this->setStatus(self::STATUS_UPDATE);
                 break;
         }
     }
 
-    protected function handleOmException($e)
+    public function getFormData()
     {
-        $this->err[] = $e->getMessage();
+        $formData = array();
+        $omData = $this->omToArray();
+        $map = $this->getRequestDataMapping();
+
+        foreach ($this->omFieldNames as $omField) {
+            $formData[isset($map[$omField]) ?: $omField] = $omData[$omField];
+        }
+
+        return $formData;
     }
 }

@@ -19,44 +19,57 @@
 
 namespace Mindbit\Mpl\Mvc\Controller;
 
-use Mindbit\Mpl\Mvc\Controller\BaseRequest;
 use Mindbit\Mpl\Util\Propel;
+use Propel\Runtime\Map\TableMap;
 
 abstract class OmRequest extends BaseRequest
 {
-    const OPERATION_FETCH  = 1;
-    const OPERATION_ADD    = 2;
-    const OPERATION_UPDATE = 3;
-    const OPERATION_REMOVE = 4;
+    const ACTION_FETCH  = 'fetch';
+    const ACTION_ADD    = 'add';
+    const ACTION_UPDATE = 'update';
+    const ACTION_REMOVE = 'remove';
 
-    protected $operationType;
-    protected $data;
+    protected $data = array();
 
     protected $om;
-    protected $omPeer;
+
+    /**
+     * @var \Propel\Runtime\Map\TableMap
+     */
+    protected $tableMap;
+
     protected $omFieldNames;
 
-    abstract public function createOm();
-    abstract protected function decode();
-    abstract protected function doFetch();
+    abstract protected function createOm();
+    abstract protected function actionFetch();
 
-    protected function init()
+    public function __construct()
     {
         $this->om = $this->createOm();
-        $this->omPeer = $this->om->getPeer();
-        $this->omFieldNames = $this->omPeer->getFieldNames(BasePeer::TYPE_FIELDNAME);
-        $this->err = array();
-        $this->data = array();
+        $omReflection = new \ReflectionClass($this->om);
+        $tableMapReflection = new \ReflectionClass($omReflection->getConstant('TABLE_MAP'));
+        $this->tableMap = $tableMapReflection->getMethod('getTableMap')->invoke(null);
+        $this->omFieldNames = $this->tableMap->getFieldNames(TableMap::TYPE_FIELDNAME);
+        $this->errors = array();
+    }
+
+    public function getOm()
+    {
+        return $this->om;
+    }
+
+    public function getPrimaryKeyFieldName()
+    {
+        return key($this->tableMap->getPrimaryKeys());
     }
 
     protected function setOmFields($data)
     {
-        $tableMap = $this->omPeer->getTableMap();
         foreach ($data as $field => $value) {
-            $phpName = $this->omPeer->translateFieldName(
+            $setter = 'set' . $this->tableMap->translateFieldName(
                 $field,
-                BasePeer::TYPE_FIELDNAME,
-                BasePeer::TYPE_PHPNAME
+                TableMap::TYPE_FIELDNAME,
+                TableMap::TYPE_PHPNAME
             );
             // The following block worksaround the following issue: when text
             // fields are set to their default value during update, they are
@@ -66,29 +79,31 @@ abstract class OmRequest extends BaseRequest
             // All this mess is because BaseObject::$modifiedColumns is
             // protected and therefore we cannot explicitly set the column
             // as modified.
+            /* FIXME still needed for Propel2 ?
             if ($this->operationType == self::OPERATION_UPDATE) {
                 $column = $tableMap->getColumn($field);
                 if ($column->isText()) {
                     call_user_func(array($this->om, "set".$phpName), '_' . $data[$field]);
                 }
             }
-            call_user_func(array($this->om, "set".$phpName), $data[$field]);
+            */
+            $this->om->$setter($data[$field]);
         }
     }
 
-    protected function omToArray($om)
+    protected function omToArray($om = null)
     {
         $ret = array();
-        $om = (array)$om;
-        $tableMap = $this->omPeer->getTableMap();
+        $om = (array)($om ?: $this->om);
         foreach ($this->omFieldNames as $field) {
             $val = $om[Propel::PROTECTED_MAGIC . $field];
-            $column = $tableMap->getColumn($field);
+            $column = $this->tableMap->getColumn($field);
             /* Blob columns are read by propel into a memory buffer and
                are returned to the user as a resource of type stream.
                Since those cannot be json encoded, and we need that in
                all our SmartClient applications, we need to read the
                buffer contents into a string.
+               FIXME: does this still apply to Propel 2 ?
              */
             if (is_resource($val) && $column->isLob()) {
                 $val = stream_get_contents($val);
@@ -103,13 +118,12 @@ abstract class OmRequest extends BaseRequest
         if ($data === null) {
             $data = $this->data;
         }
-        $tableMap = $this->omPeer->getTableMap();
         $ret = array();
         foreach ($this->arrayToOmFieldNames() as $field) {
             if (!isset($data[$field])) {
                 continue;
             }
-            $column = $tableMap->getColumn($field);
+            $column = $this->tableMap->getColumn($field);
             $value = $data[$field];
             // For text and numeric columns that can be null we translate '' to null.
             if ($data[$field] === '' && ($column->isText() || $column->isNumeric()) &&
@@ -131,16 +145,29 @@ abstract class OmRequest extends BaseRequest
         return true;
     }
 
-    protected function doSave()
+    /**
+     * Add or update a database record.
+     *
+     * Both actionAdd() and actionUpdate() are wrappers for this method that just set a value
+     * for the $new parameter. The parameter is passed directly to the Propel BaseObject class.
+     *
+     * The Propel BaseObject::doSave() method decides whether it does an INSERT or UPDATE based
+     * on the $new flag. The default value is true (set as part of the BaseObject class).
+     *
+     * @param bool $new
+     */
+    protected function actionSave($new)
     {
         $this->setOmFields($this->arrayToOm());
         if (!$this->validate()) {
             return;
         }
+        /* FIXME is there anything equivalent to validate() in Propel 2 ?
         if (!$this->om->validate()) {
-            $this->err = array_merge($this->err, $this->om->getValidationFailures());
+            $this->errors = array_merge($this->errors, $this->om->getValidationFailures());
             return;
         }
+        */
         // Intentionally call setNew() *AFTER* setOmFields() was called, because
         // otherwise updating a field to its default value would not work (the OM
         // class constructor sets all fields to their default values and all
@@ -161,61 +188,34 @@ abstract class OmRequest extends BaseRequest
         //
         // The case is almost the same for DateTime fields, but that's more
         // complex.
-        if ($this->operationType == self::OPERATION_UPDATE) {
-            $this->om->setNew(false);
-        }
-        $this->__doSave();
+        $this->om->setNew($new);
+        $this->omSave();
     }
 
-    protected function __doSave()
+    protected function omSave()
     {
-        if (empty($this->err)) {
-            $this->om->save();
+        if (empty($this->errors)) {
+            try {
+                $this->om->save();
+            } catch (\Exception $e) {
+                $this->errors[] = $e->getMessage();
+            }
         }
     }
 
-    protected function doRemove()
+    protected function actionAdd()
+    {
+        $this->actionSave(true);
+    }
+
+    protected function actionUpdate()
+    {
+        $this->actionSave(false);
+    }
+
+    protected function actionRemove()
     {
         $this->setOmFields($this->arrayToOm());
         $this->om->delete();
-    }
-
-    public function getOperationType()
-    {
-        return $this->operationType;
-    }
-
-    public function getOm()
-    {
-        return $this->om;
-    }
-
-    public function dispatch()
-    {
-        $this->init();
-        $this->decode();
-
-        switch ($this->operationType) {
-            case self::OPERATION_FETCH:
-                $this->doFetch();
-                break;
-            case self::OPERATION_UPDATE:
-            case self::OPERATION_ADD:
-                // NOTE: doSave() is called for both operations, but doSave()
-                //       calls $this->om->setNew(false) when the operation is
-                //       self::OPERATION_UPDATE.
-                //
-                //       Later, the doSave() method inside the propel
-                //       BaseObject class decides whether it does an INSERT
-                //       or an UPDATE based on the 'new' flag.
-                //
-                //       The default value of the 'new' flag is true (set as
-                //       part of the BaseObject class definition).
-                $this->doSave();
-                break;
-            case self::OPERATION_REMOVE:
-                $this->doRemove();
-                break;
-        }
     }
 }

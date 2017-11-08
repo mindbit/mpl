@@ -109,8 +109,6 @@ abstract class HtmlResponse extends BaseResponse
      */
     protected $template;
 
-    protected $om;
-
     public function __construct($request)
     {
         parent::__construct($request);
@@ -129,20 +127,11 @@ abstract class HtmlResponse extends BaseResponse
         // FIXME: REQUEST_URI doesn't work in all environments (nginx?, apache+fcgi?)
         // FIXME: what about external query parameters that we may need to preserve?
         $this->template->setVariable(self::VAR_FORM_ACTION, $_SERVER['REQUEST_URI']);
-
-        if ($this->request instanceof OmRequest) {
-            $this->om = $this->request->getOm();
-        }
     }
 
-    public function getOm()
+    public function getTemplate()
     {
-        return $this->om;
-    }
-
-    public function setOm($om)
-    {
-        $this->om = $om;
+        return $this->template;
     }
 
     public function entities($string)
