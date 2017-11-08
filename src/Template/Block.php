@@ -240,6 +240,10 @@ class Block
         return $this;
     }
 
+    /**
+     * @param string $name
+     * @return \Mindbit\Mpl\Template\Block
+     */
     public function getBlock($name)
     {
         return isset($this->index[$name]) ? $this->index[$name] : null;
