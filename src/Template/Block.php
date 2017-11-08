@@ -234,7 +234,7 @@ class Block
         return $this;
     }
 
-    public function setVariables($data)
+    public function setVariables(array $data)
     {
         $this->variables = $data + $this->variables;
         return $this;
