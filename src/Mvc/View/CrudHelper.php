@@ -22,26 +22,14 @@ namespace Mindbit\Mpl\Mvc\View;
 use Mindbit\Mpl\Mvc\Controller\SimpleFormRequest;
 use Mindbit\Mpl\Template\Template;
 
-class CrudHelper
+class CrudHelper extends FormHelper
 {
     const TEMPLATE_CRUDFORM = 'mindbit.mpl.crudform.html';
 
     const BLOCK_ID          = 'mindbit.mpl.crud.id';
 
-    const VAR_SUBMIT_VALUE  = 'mindbit.mpl.submit.value';
-    const VAR_ACTION_VALUE  = 'mindbit.mpl.action.value';
     const VAR_ID_NAME       = 'mindbit.mpl.crud.id.name';
     const VAR_ID_VALUE      = 'mindbit.mpl.crud.id.value';
-
-    protected $response;
-
-    /**
-     * @param HtmlResponse $response
-     */
-    public function __construct($response)
-    {
-        $this->response = $response;
-    }
 
     public function getSubmitAddText()
     {
@@ -53,7 +41,7 @@ class CrudHelper
         return str_pad(_('Update'), 25, ' ', STR_PAD_BOTH);
     }
 
-    public function getSubmitVariables()
+    public function getVariables()
     {
         switch ($this->response->getRequest()->getStatus()) {
             case SimpleFormRequest::STATUS_ADD:
@@ -70,7 +58,7 @@ class CrudHelper
         ];
     }
 
-    public function getInputHiddenBlock()
+    public function getBlock()
     {
         $template = Template::load(self::TEMPLATE_CRUDFORM);
         switch ($this->response->getRequest()->getStatus()) {
