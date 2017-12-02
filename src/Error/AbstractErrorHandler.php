@@ -266,12 +266,12 @@ abstract class AbstractErrorHandler
     public function exceptionToErrorData($e)
     {
         return array(
-                "code"            => E_UNHANDLED_EXCEPTION,
-                "description"    => $e->getMessage(),
-                "filename"        => $e->getFile(),
-                "line"            => $e->getLine(),
-                "context"        => null,
-                "backtrace"        => $this->normalizeBacktrace($e->getTrace())
+                'code'          => E_UNHANDLED_EXCEPTION,
+                'description'   => get_class($e) . ': ' . $e->getMessage(),
+                'filename'      => $e->getFile(),
+                'line'          => $e->getLine(),
+                'context'       => null,
+                'backtrace'     => $this->normalizeBacktrace($e->getTrace())
                 );
     }
 
