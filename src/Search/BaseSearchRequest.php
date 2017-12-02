@@ -24,9 +24,26 @@ use Mindbit\Mpl\Util\HTTP;
 
 abstract class BaseSearchRequest extends BaseRequest
 {
-    const STATE_FORM = 1;
-    const STATE_RESULTS = 2;
+    const ACTION_FORM       = 'form';
+    const ACTION_RESULTS    = 'results';
+    const DEFAULT_ACTION    = self::ACTION_FORM;
 
+    const STATUS_FORM       = self::ACTION_FORM;
+    const STATUS_RESULTS    = self::ACTION_RESULTS;
+
+    protected function actionForm()
+    {
+        $this->setStatus(self::STATUS_FORM);
+    }
+
+    public function getFormData()
+    {
+        return [];
+    }
+}
+
+abstract class __BaseSearchRequest
+{
     /**
      * Array that contains search keywords
      */
