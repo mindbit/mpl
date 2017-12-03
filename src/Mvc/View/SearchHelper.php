@@ -24,7 +24,12 @@ use Mindbit\Mpl\Search\BaseSearchRequest;
 
 class SearchHelper extends FormHelper
 {
-    const TEMPLATE_SEARCHFORM = 'mindbit.mpl.searchform.html';
+    const TEMPLATE_SEARCHFORM   = 'mindbit.mpl.searchform.html';
+
+    const VAR_PAGE_NAME         = 'mindbit.mpl.search.page.name';
+    const VAR_PAGE_VALUE        = 'mindbit.mpl.search.page.value';
+    const VAR_MRPP_NAME         = 'mindbit.mpl.search.mrpp.name';
+    const VAR_MRPP_VALUE        = 'mindbit.mpl.search.mrpp.value';
 
     public function getVariables()
     {
@@ -35,8 +40,18 @@ class SearchHelper extends FormHelper
 
     public function getBlock()
     {
+        /**
+         * @var \Mindbit\Mpl\Search\BaseSearchRequest $request
+         */
+        $request = $this->response->getRequest();
         $template = Template::load(self::TEMPLATE_SEARCHFORM);
-        $template->setVariable(self::VAR_ACTION_VALUE, BaseSearchRequest::ACTION_RESULTS);
+        $template->setVariables([
+            self::VAR_PAGE_NAME     => BaseSearchRequest::PAGE_KEY,
+            self::VAR_PAGE_VALUE    => $request->getPage(),
+            self::VAR_MRPP_NAME     => BaseSearchRequest::MRPP_KEY,
+            self::VAR_MRPP_VALUE    => $request->getMaxPerPage(),
+            self::VAR_ACTION_VALUE  => BaseSearchRequest::ACTION_RESULTS
+        ]);
         return $template->getBlock(null);
     }
 }

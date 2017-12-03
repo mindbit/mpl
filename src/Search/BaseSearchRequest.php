@@ -21,6 +21,7 @@ namespace Mindbit\Mpl\Search;
 
 use Mindbit\Mpl\Mvc\Controller\BaseRequest;
 use Mindbit\Mpl\Util\HTTP;
+use Propel\Runtime\ActiveQuery\Criteria;
 
 abstract class BaseSearchRequest extends BaseRequest
 {
@@ -30,16 +31,66 @@ abstract class BaseSearchRequest extends BaseRequest
 
     const STATUS_FORM       = self::ACTION_FORM;
     const STATUS_RESULTS    = self::ACTION_RESULTS;
+    const STATUS_NORESULTS  = 'noresults';
+
+    const PAGE_KEY          = 'search_page';
+    const MRPP_KEY          = 'search_mrpp';
+
+    protected $pager;
 
     protected function actionForm()
     {
         $this->setStatus(self::STATUS_FORM);
     }
 
+    protected function actionResults()
+    {
+        $this->pager = $this->buildQuery()->paginate(
+            $_REQUEST[self::PAGE_KEY],
+            $_REQUEST[self::MRPP_KEY]
+        );
+        $this->setStatus($this->pager->getNbResults() ? self::STATUS_RESULTS : self::STATUS_NORESULTS);
+    }
+
     public function getFormData()
     {
         return [];
     }
+
+    /**
+     * @param \Propel\Runtime\ActiveQuery\ModelCriteria $query
+     * @param string $column
+     * @param string $value
+     * @return \Propel\Runtime\ActiveQuery\ModelCriteria
+     */
+    public function addLike($query, $column, $value)
+    {
+        $value = trim($value);
+        if (strlen($value)) {
+            $query->addUsingAlias($column, '%' . $value . '%', Criteria::LIKE);
+        }
+        return $query;
+    }
+
+    public function getPage()
+    {
+        return $this->pager ? $this->pager->getPage() : 1;
+    }
+
+    public function getMaxPerPage()
+    {
+        return $this->pager ? $this->pager->getMaxPerPage() : 10;
+    }
+
+    public function getPager()
+    {
+        return $this->pager;
+    }
+
+    /**
+     * @return \Propel\Runtime\ActiveQuery\ModelCriteria
+     */
+    protected abstract function buildQuery();
 }
 
 abstract class __BaseSearchRequest
@@ -111,15 +162,6 @@ abstract class __BaseSearchRequest
     public function getOffset()
     {
         return $this->offset;
-    }
-
-    public function addLike($criteria, $column, $field)
-    {
-        if (!strlen($this->data[$field])) {
-            return $criteria;
-        }
-        $criteria->add($column, '%' . trim($this->data[$field]) . '%', Criteria::LIKE);
-        return $criteria;
     }
 
     public function setQueryPager($query)
