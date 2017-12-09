@@ -19,10 +19,9 @@
 
 namespace Mindbit\Mpl\Mvc\View;
 
-use Mindbit\Mpl\Mvc\Controller\OmRequest;
 use Mindbit\Mpl\Template\Template;
 
-abstract class HtmlResponse extends BaseResponse
+class HtmlResponse extends BaseResponse
 {
     // constants for coding various doctypes
     // bits 0 to 7 are for minor version, 8 to 15 for major
@@ -56,9 +55,6 @@ abstract class HtmlResponse extends BaseResponse
     const VAR_CSSREF_HREF                   = 'mindbit.mpl.cssref.href';
     const VAR_CSSREF_XATTR                  = 'mindbit.mpl.cssref.xattr';
     const VAR_JSREF_SRC                     = 'mindbit.mpl.jsref.src';
-
-    const VAR_FORM_METHOD                   = 'mindbit.mpl.form.method';
-    const VAR_FORM_ACTION                   = 'mindbit.mpl.form.action';
 
     const METHOD_POST                       = 'POST';
     const METHOD_GET                        = 'GET';
@@ -119,14 +115,6 @@ abstract class HtmlResponse extends BaseResponse
         // Descendent classes can change $this->doctype from their constructor before calling
         // the parent constructor.
         $this->template = Template::load(self::TEMPLATE_HTML_DOC);
-        $this->template->setVariable(self::VAR_FORM_METHOD, self::METHOD_POST);
-
-        // By default we repost to the request URI. Note that PHP_SELF (i.e. the script name)
-        // is not what we want because typically we have rewrite rules in the web server
-        // configuration.
-        // FIXME: REQUEST_URI doesn't work in all environments (nginx?, apache+fcgi?)
-        // FIXME: what about external query parameters that we may need to preserve?
-        $this->template->setVariable(self::VAR_FORM_ACTION, $_SERVER['REQUEST_URI']);
     }
 
     public function getTemplate()

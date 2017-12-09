@@ -19,21 +19,29 @@
 
 namespace Mindbit\Mpl\Mvc\View;
 
-abstract class FormHelper
-{
-    const VAR_SUBMIT_VALUE  = 'mindbit.mpl.submit.value';
-    const VAR_ACTION_VALUE  = 'mindbit.mpl.action.value';
+use Mindbit\Mpl\Template\Template;
 
-    protected $response;
+class HtmlDecorator extends HtmlResponse
+{
+    private $component;
 
     /**
-     * @param HtmlResponse $response
+     * @param HtmlResponse $component
+     * @param string $block
+     * @param string $template
      */
-    public function __construct($response)
+    public function __construct($component, $block, $template = null)
     {
-        $this->response = $response;
+        $this->request = $component->request;
+        $this->template = $component->template;
+        $this->component = $component;
+        if ($template) {
+            $this->template->replaceBlock($block, Template::load($template));
+        }
     }
 
-    public abstract function getVariables();
-    public abstract function getBlock();
+    public function send()
+    {
+        $this->component->send();
+    }
 }
