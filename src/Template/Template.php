@@ -118,7 +118,12 @@ class Template
         if ($object instanceof Template) {
             $object = $object->rootBlock;
         }
-        $this->rootBlock->getBlock($name)->replace($object);
+        $block = $this->rootBlock->getBlock($name);
+        if (!$block) {
+            throw new \Exception('Undefined block ' . $name);
+            // FIXME throw a more granular exception type
+        }
+        $block->replace($object);
     }
 
     public function getRenderedText()
