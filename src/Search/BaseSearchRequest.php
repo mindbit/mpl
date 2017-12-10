@@ -22,6 +22,7 @@ namespace Mindbit\Mpl\Search;
 use Mindbit\Mpl\Mvc\Controller\BaseRequest;
 use Mindbit\Mpl\Util\HTTP;
 use Propel\Runtime\ActiveQuery\Criteria;
+use Propel\Runtime\Map\TableMap;
 
 abstract class BaseSearchRequest extends BaseRequest
 {
@@ -50,6 +51,11 @@ abstract class BaseSearchRequest extends BaseRequest
             $_REQUEST[self::MRPP_KEY]
         );
         $this->setStatus($this->pager->getNbResults() ? self::STATUS_RESULTS : self::STATUS_NORESULTS);
+    }
+
+    protected function getRowVariables($om)
+    {
+        return $om->toArray(TableMap::TYPE_FIELDNAME);
     }
 
     public function getFormData()
@@ -82,9 +88,15 @@ abstract class BaseSearchRequest extends BaseRequest
         return $this->pager ? $this->pager->getMaxPerPage() : 10;
     }
 
-    public function getPager()
+    /**
+     * @param \Mindbit\Mpl\Mvc\View\SearchDecorator $decorator
+     */
+    public function showResults($decorator)
     {
-        return $this->pager;
+        $offset = 0;
+        foreach ($this->pager as $om) {
+            $decorator->showResult($this->getRowVariables($om), $offset++);
+        }
     }
 
     /**
