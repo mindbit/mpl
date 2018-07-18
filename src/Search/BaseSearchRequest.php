@@ -88,6 +88,21 @@ abstract class BaseSearchRequest extends BaseRequest
         return $this->pager ? $this->pager->getMaxPerPage() : 10;
     }
 
+    public function getFirstIndex()
+    {
+        return $this->pager->getFirstIndex();
+    }
+
+    public function getLastIndex()
+    {
+        return $this->pager->getLastIndex();
+    }
+
+    public function getNbResults()
+    {
+        return $this->pager->getNbResults();
+    }
+
     /**
      * @param \Mindbit\Mpl\Mvc\View\SearchDecorator $decorator
      */

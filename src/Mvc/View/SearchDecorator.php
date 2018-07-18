@@ -20,14 +20,23 @@
 namespace Mindbit\Mpl\Mvc\View;
 
 use Mindbit\Mpl\Search\BaseSearchRequest;
+use Mindbit\Mpl\Template\Template;
 
+/**
+ * @property \Mindbit\Mpl\Search\BaseSearchRequest $request
+ */
 class SearchDecorator extends HtmlDecorator
 {
     const TEMPLATE_SEARCHFORM   = 'mindbit.mpl.searchform.html';
+    const TEMPLATE_SEARCHPAGER  = 'mindbit.mpl.searchpager.html';
+
+    const JS_SEARCHPAGER        = 'js/mpl/searchpager.js';
 
     const BLOCK_FORM            = 'application.search.form';
     const BLOCK_NORESULTS       = 'application.search.noresults';
     const BLOCK_ROW             = 'application.search.row';
+    const BLOCK_PAGER           = 'application.search.pager';
+    const BLOCK_MRPP            = 'mindbit.mpl.search.mrpp';
 
     const VAR_ACTION            = 'mindbit.mpl.search.action';
     const VAR_PAGE_NAME         = 'mindbit.mpl.search.page.name';
@@ -35,16 +44,28 @@ class SearchDecorator extends HtmlDecorator
     const VAR_MRPP_NAME         = 'mindbit.mpl.search.mrpp.name';
     const VAR_MRPP_VALUE        = 'mindbit.mpl.search.mrpp.value';
 
+    const VAR_FIRSTINDEX        = 'mindbit.mpl.search.firstindex';
+    const VAR_LASTINDEX         = 'mindbit.mpl.search.lastindex';
+    const VAR_NBRESULTS         = 'mindbit.mpl.search.nbresults';
+
+    protected $js;
+
     /**
      * @param HtmlResponse $component
      */
-    public function __construct($component)
+    public function __construct($component, $template = self::TEMPLATE_SEARCHPAGER, $js = self::JS_SEARCHPAGER)
     {
         parent::__construct(
             $component,
             FormDecorator::BLOCK_HIDDEN,
             self::TEMPLATE_SEARCHFORM
         );
+
+        if ($template) {
+            $this->template->replaceBlock(self::BLOCK_PAGER, Template::load($template));
+        }
+
+        $this->js = $js;
     }
 
     public function send()
@@ -66,11 +87,38 @@ class SearchDecorator extends HtmlDecorator
                 $this->template->getBlock(static::BLOCK_NORESULTS)->show();
                 break;
             case BaseSearchRequest::STATUS_RESULTS:
+                $this->showMrppOptions();
                 $this->request->showResults($this);
+                if ($this->js) {
+                    $this->addJsRef($this->js);
+                }
+                $this->template->setVariables([
+                    self::VAR_FIRSTINDEX    => $this->request->getFirstIndex(),
+                    self::VAR_LASTINDEX     => $this->request->getLastIndex(),
+                    self::VAR_NBRESULTS     => $this->request->getNbResults(),
+                ]);
                 break;
         }
 
         parent::send();
+    }
+
+    protected function getMrppOptions($mrpp)
+    {
+        $ret = array(
+            '10'    => array('text' => '10'),
+            '20'    => array('text' => '20'),
+            '50'    => array('text' => '50'),
+            '100'   => array('text' => '100')
+        );
+        $ret[$mrpp]['selected'] = true;
+        return $ret;
+    }
+
+    protected function showMrppOptions()
+    {
+        $mrpp = $this->request->getMaxPerPage();
+        $this->addSelect(self::BLOCK_MRPP, $this->getMrppOptions($mrpp));
     }
 
     public function showResult($variables, $offset)
