@@ -38,11 +38,22 @@ class SearchDecorator extends HtmlDecorator
     const BLOCK_PAGER           = 'application.search.pager';
     const BLOCK_MRPP            = 'mindbit.mpl.search.mrpp';
 
+    const BLOCK_PN_BACK_OFF     = 'mindbit.mpl.search.pn.back.off';
+    const BLOCK_PN_BACK_ON      = 'mindbit.mpl.search.pn.back.on';
+    const BLOCK_PN_BEFORE       = 'mindbit.mpl.search.pn.before';
+    const BLOCK_PN_CURRENT      = 'mindbit.mpl.search.pn.current';
+    const BLOCK_PN_AFTER        = 'mindbit.mpl.search.pn.after';
+    const BLOCK_PN_FORWARD_OFF  = 'mindbit.mpl.search.pn.forward.off';
+    const BLOCK_PN_FORWARD_ON   = 'mindbit.mpl.search.pn.forward.on';
+
     const VAR_ACTION            = 'mindbit.mpl.search.action';
     const VAR_PAGE_NAME         = 'mindbit.mpl.search.page.name';
     const VAR_PAGE_VALUE        = 'mindbit.mpl.search.page.value';
     const VAR_MRPP_NAME         = 'mindbit.mpl.search.mrpp.name';
     const VAR_MRPP_VALUE        = 'mindbit.mpl.search.mrpp.value';
+
+    const VAR_PN_PAGE           = 'mindbit.mpl.search.pn.page';
+    const VAR_PN_LAST           = 'mindbit.mpl.search.pn.last';
 
     const VAR_FIRSTINDEX        = 'mindbit.mpl.search.firstindex';
     const VAR_LASTINDEX         = 'mindbit.mpl.search.lastindex';
@@ -87,6 +98,7 @@ class SearchDecorator extends HtmlDecorator
                 $this->template->getBlock(static::BLOCK_NORESULTS)->show();
                 break;
             case BaseSearchRequest::STATUS_RESULTS:
+                $this->showPageNavigator();
                 $this->showMrppOptions();
                 $this->request->showResults($this);
                 if ($this->js) {
@@ -101,6 +113,38 @@ class SearchDecorator extends HtmlDecorator
         }
 
         parent::send();
+    }
+
+    protected function showPageNavigator()
+    {
+        $currentPage = $this->request->getPage();
+
+        if ($currentPage == 1) {
+            $this->template->getBlock(self::BLOCK_PN_BACK_OFF)->show();
+        } else {
+            $this->template->setVariable(self::VAR_PN_PAGE, $currentPage - 1);
+            $this->template->getBlock(self::BLOCK_PN_BACK_ON)->show();
+        }
+
+        $lastPage = $this->request->getLastPage();
+        if ($currentPage == $lastPage) {
+            $this->template->getBlock(self::BLOCK_PN_FORWARD_OFF)->show();
+        } else {
+            $this->template->setVariable(self::VAR_PN_PAGE, $currentPage + 1);
+            $this->template->setVariable(self::VAR_PN_LAST, $lastPage);
+            $this->template->getBlock(self::BLOCK_PN_FORWARD_ON)->show();
+        }
+
+        foreach($this->request->getLinks() as $page) {
+            $this->template->setVariable(self::VAR_PN_PAGE, $page);
+            if ($page < $currentPage) {
+                $this->template->getBlock(self::BLOCK_PN_BEFORE)->show();
+            } elseif ($page > $currentPage) {
+                $this->template->getBlock(self::BLOCK_PN_AFTER)->show();
+            } else {
+                $this->template->getBlock(self::BLOCK_PN_CURRENT)->show();
+            }
+        }
     }
 
     protected function getMrppOptions($mrpp)

@@ -103,6 +103,16 @@ abstract class BaseSearchRequest extends BaseRequest
         return $this->pager->getNbResults();
     }
 
+    public function getLastPage()
+    {
+        return $this->pager->getLastPage();
+    }
+
+    public function getLinks($nbLinks = 5)
+    {
+        return $this->pager->getLinks($nbLinks);
+    }
+
     /**
      * @param \Mindbit\Mpl\Mvc\View\SearchDecorator $decorator
      */

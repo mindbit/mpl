@@ -1,5 +1,31 @@
 <div>Results: {mindbit.mpl.search.firstindex} - {mindbit.mpl.search.lastindex} of {mindbit.mpl.search.nbresults}</div>
 <div>
+  Page:
+  <!-- BEGIN mindbit.mpl.search.pn.back.off [hidden] -->
+  «
+  &lt;
+  <!-- END mindbit.mpl.search.pn.back.off -->
+  <!-- BEGIN mindbit.mpl.search.pn.back.on [hidden] -->
+  <a href="#" onClick="searchPage('{mindbit.mpl.search.page.name}', 1)">«</a>
+  <a href="#" onClick="searchPage('{mindbit.mpl.search.page.name}', {mindbit.mpl.search.pn.page})">&lt;</a>
+  <!-- END mindbit.mpl.search.pn.back.on -->
+  <!-- BEGIN mindbit.mpl.search.pn.before [hidden] -->
+  <a href="#" onClick="searchPage('{mindbit.mpl.search.page.name}', {mindbit.mpl.search.pn.page})">{mindbit.mpl.search.pn.page}</a>
+  <!-- END mindbit.mpl.search.pn.before -->
+  <!-- BEGIN mindbit.mpl.search.pn.current [hidden] -->
+  [{mindbit.mpl.search.pn.page}]
+  <!-- END mindbit.mpl.search.pn.current -->
+  <!-- BEGIN mindbit.mpl.search.pn.after [hidden] -->
+  <a href="#" onClick="searchPage('{mindbit.mpl.search.page.name}', {mindbit.mpl.search.pn.page})">{mindbit.mpl.search.pn.page}</a>
+  <!-- END mindbit.mpl.search.pn.after -->
+  <!-- BEGIN mindbit.mpl.search.pn.forward.off [hidden] -->
+  &gt;
+  »
+  <!-- END mindbit.mpl.search.pn.forward.off -->
+  <!-- BEGIN mindbit.mpl.search.pn.forward.on [hidden] -->
+  <a href="#" onClick="searchPage('{mindbit.mpl.search.page.name}', {mindbit.mpl.search.pn.page})">&gt;</a>
+  <a href="#" onClick="searchPage('{mindbit.mpl.search.page.name}', {mindbit.mpl.search.pn.last})">»</a>
+  <!-- END mindbit.mpl.search.pn.forward.on -->
 </div>
 <div>
   Results/page:
