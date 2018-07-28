@@ -25,6 +25,7 @@ class FormDecorator extends HtmlDecorator
 
     const BLOCK_CONTENT             = 'mindbit.mpl.form.content';
     const BLOCK_HIDDEN              = 'mindbit.mpl.form.hidden';
+    const BLOCK_SUBMIT              = 'mindbit.mpl.form.submit';
 
     const VAR_METHOD                = 'mindbit.mpl.form.method';
     const VAR_ACTION                = 'mindbit.mpl.form.action';
