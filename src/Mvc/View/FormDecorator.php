@@ -29,7 +29,13 @@ class FormDecorator extends HtmlDecorator
 
     const VAR_METHOD                = 'mindbit.mpl.form.method';
     const VAR_ACTION                = 'mindbit.mpl.form.action';
+    const VAR_TARGET                = 'mindbit.mpl.form.target';
     const VAR_SUBMIT_VALUE          = 'mindbit.mpl.submit.value';
+
+    const TARGET_BLANK              = '_blank';
+    const TARGET_SELF               = '_self';
+    const TARGET_PARENT             = '_parent';
+    const TARGET_TOP                = '_top';
 
     /**
      * @param HtmlResponse $component
@@ -47,5 +53,7 @@ class FormDecorator extends HtmlDecorator
         // FIXME: REQUEST_URI doesn't work in all environments (nginx?, apache+fcgi?)
         // FIXME: what about external query parameters that we may need to preserve?
         $this->template->setVariable(self::VAR_ACTION, $_SERVER['REQUEST_URI']);
+
+        $this->template->setVariable(self::VAR_TARGET, self::TARGET_SELF);
     }
 }
