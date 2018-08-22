@@ -96,6 +96,7 @@ class SearchDecorator extends HtmlDecorator
                 break;
             case BaseSearchRequest::STATUS_NORESULTS:
                 $this->template->getBlock(static::BLOCK_NORESULTS)->show();
+                $this->template->getBlock(FormDecorator::BLOCK_SUBMIT)->hide();
                 break;
             case BaseSearchRequest::STATUS_RESULTS:
                 $this->showPageNavigator();
@@ -109,6 +110,7 @@ class SearchDecorator extends HtmlDecorator
                     self::VAR_LASTINDEX     => $this->request->getLastIndex(),
                     self::VAR_NBRESULTS     => $this->request->getNbResults(),
                 ]);
+                $this->template->getBlock(FormDecorator::BLOCK_SUBMIT)->hide();
                 break;
         }
 
