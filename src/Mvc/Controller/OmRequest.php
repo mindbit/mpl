@@ -43,12 +43,17 @@ abstract class OmRequest extends BaseRequest
     abstract protected function createOm();
     abstract protected function actionFetch();
 
+    public static function getTableMapInstance($om)
+    {
+        $omReflection = new \ReflectionClass($om);
+        $tableMapReflection = new \ReflectionClass($omReflection->getConstant('TABLE_MAP'));
+        return $tableMapReflection->getMethod('getTableMap')->invoke(null);
+    }
+
     public function __construct()
     {
         $this->om = $this->createOm();
-        $omReflection = new \ReflectionClass($this->om);
-        $tableMapReflection = new \ReflectionClass($omReflection->getConstant('TABLE_MAP'));
-        $this->tableMap = $tableMapReflection->getMethod('getTableMap')->invoke(null);
+        $this->tableMap = $this->getTableMapInstance($this->om);
         $this->omFieldNames = $this->tableMap->getFieldNames(TableMap::TYPE_FIELDNAME);
         $this->errors = array();
     }

@@ -74,7 +74,11 @@ abstract class SimpleFormRequest extends OmRequest
     protected function actionFetch()
     {
         $this->om->setPrimaryKey($_REQUEST[$this->getPrimaryKeyFieldName()]);
-        $this->om = $this->om->buildPkeyCriteria()->findOne();
+        $om = $this->om->buildPkeyCriteria()->findOne();
+        if (!$om) {
+            throw new ObjectNotFoundException($this->om);
+        }
+        $this->om = $om;
     }
 
     protected function actionNew()
