@@ -19,7 +19,6 @@
 
 namespace Mindbit\Mpl\Error;
 
-use Mindbit\Mpl\Error\AbstractErrorHandler;
 use Mindbit\Mpl\Util\AsciiTable;
 use Psr\Log\LogLevel;
 use Mindbit\Mpl\MPL;
@@ -51,6 +50,9 @@ class GenericErrorHandler extends AbstractErrorHandler
         $this->displayFormat =
             isset($_SERVER['SERVER_NAME']) && $_SERVER['SERVER_NAME'] ?
             self::DISPLAY_FORMAT_HTML : self::DISPLAY_FORMAT_TEXT;
+        $this->backtraceFilter = array_merge($this->backtraceFilter, [
+            'Mindbit\\Mpl\\Error\\GenericErrorHandler::'
+        ]);
     }
 
     public function onActivate()
@@ -317,8 +319,11 @@ class GenericErrorHandler extends AbstractErrorHandler
 
     public function handleSingleError($data)
     {
+        if (!isset($data['backtrace'])) {
+            $data['backtrace'] = $this->normalizeBacktrace(debug_backtrace());
+        }
         $data["textCode"] = $this->errorCodeToStr($data["code"]) . " (" . $data["code"] . ")";
-        $data["renderedBacktrace"] = $this->renderBacktrace(isset($data["backtrace"]) ? $data["backtrace"] : null);
+        $data['renderedBacktrace'] = $this->renderBacktrace($data['backtrace']);
         $data["dumpedContext"] = $this->varDump($data["context"]);
         $this->removeGlobals($data["context"]);
 
@@ -372,11 +377,4 @@ class GenericErrorHandler extends AbstractErrorHandler
         }
     }
 
-    /* FIXME
-    function backtraceFilter(&$frame) {
-        if (isset($frame["class"]) && $frame["class"] == "ErrorHandler" && $frame["function"] == "handleError")
-            return true;
-        return parent::backtraceFilter($frame);
-    }
-    */
 }

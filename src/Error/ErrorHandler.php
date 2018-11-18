@@ -19,8 +19,6 @@
 
 namespace Mindbit\Mpl\Error;
 
-use Mindbit\Mpl\Error\AbstractErrorHandler;
-
 class ErrorHandler
 {
     protected static $handlerInstance = null;

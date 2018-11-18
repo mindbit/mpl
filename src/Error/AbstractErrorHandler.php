@@ -27,6 +27,11 @@ abstract class AbstractErrorHandler
     protected static $isHandlingError = false;
     protected static $isHandlingException = false;
 
+    protected $backtraceFilter = [
+        'Mindbit\\Mpl\\Error\\AbstractErrorHandler::',
+        'Mindbit\Mpl\Error\ErrorHandler::handleError',
+    ];
+
     /**
      * List of arrays that have been "seen" by varDump() recursion.
      */
@@ -265,13 +270,14 @@ abstract class AbstractErrorHandler
 
     public function exceptionToErrorData($e)
     {
+        $bt = $this->normalizeBacktrace($e->getTrace(), $e->getFile(), $e->getLine());
         return array(
                 'code'          => E_UNHANDLED_EXCEPTION,
                 'description'   => get_class($e) . ': ' . $e->getMessage(),
                 'filename'      => $e->getFile(),
                 'line'          => $e->getLine(),
                 'context'       => null,
-                'backtrace'     => $this->normalizeBacktrace($e->getTrace())
+                'backtrace'     => $bt
                 );
     }
 
@@ -331,81 +337,58 @@ abstract class AbstractErrorHandler
     }
 
     /**
-     * Calls debug_backtrace() and normalize the result.
+     * Normalize a stack trace that has been obtained from either
+     * debug_backtrace() or Exception::getTrace()
      *
-     * In the stack call returned by the debug_backtrace() it's an offset
-     * between the file, line information and those related to the
-     * name of the function or method . The method generates a new stack
-     * with the data aligned.
+     * In these stack traces, class/function information and file/line
+     * information are off by one frame. This method aligns the information and
+     * generates a stack trace that is similar to gdb.
+     *
+     * Other information than class/function and file/line (such as function
+     * arguments) is filtered out.
+     *
+     * In addition, the first contiguous group of stack frames that match
+     * $this->backtraceFilter is completely filtered out. This mechanism is
+     * used to prevent the result from showing the stack trace inside the
+     * error handling classes.
      */
-    public function normalizeBacktrace($bt = null)
+    public function normalizeBacktrace($bt = null, $file = null, $line = null)
     {
-        if ($bt === null) {
-            $bt = debug_backtrace();
-        }
-        $stack = array();
-        $n = sizeof($bt);
-        for ($i = 0; $i <= $n; $i++) {
-            $level = array();
-            if ($i < $n) {
-                if (isset($bt[$i]['class'])) {
-                    $level['class'] =& $bt[$i]['class'];
-                }
-                $level['function'] =& $bt[$i]['function'];
+        $trace = [];
+        foreach ($bt as $frame) {
+            if (!empty($trace) || !$this->matchBtFilter($frame)) {
+                $trace[] = [
+                    'class'     => @$frame['class'],
+                    'function'  => $frame['function'],
+                    'file'      => $file,
+                    'line'      => $line,
+                ];
             }
-            if ($i > 0) {
-                if (isset($bt[$i - 1]['file'])) {
-                    $level['file'] =& $bt[$i - 1]['file'];
-                }
-                if (isset($bt[$i - 1]['line'])) {
-                    $level['line'] =& $bt[$i - 1]['line'];
-                }
-            }
-            $stack[] = $level;
+            $file = $frame['file'];
+            $line = $frame['line'];
         }
-        $ret = $this->filterNormalizedBacktrace($stack);
-        return $ret;
+        $trace[] = [
+            'file' => $file,
+            'line' => $line,
+        ];
+        //echo "<pre>"; var_dump($trace);exit;
+        return $trace;
     }
 
-    public function filterNormalizedBacktrace($stack)
+    public function matchBtFilter($frame)
     {
-        $ret = array();
-        $firstLevel = 0;
-        for ($i = 0; $i < sizeof($stack); $i++) {
-            if ($this->backtraceFilter($stack[$i])) {
-                $firstLevel = max($firstLevel, $i);
+        foreach ($this->backtraceFilter as $filter) {
+            $filter = explode('::', $filter);
+            if (sizeof($filter) > 1) {
+                if (@$frame['class'] == $filter[0] &&
+                    (empty($filter[1]) || $frame['function'] == $filter[1])) {
+                        return true;
+                    }
+            } else {
+                if (@$frame['class'] == null && $frame['function'] == $filter[0]) {
+                    return true;
+                }
             }
-        }
-        for ($i = $firstLevel + 1; $i < sizeof($stack); $i++) {
-            $ret[] = $stack[$i];
-        }
-        return $ret;
-    }
-
-    public function backtraceFilter($frame)
-    {
-        return false; // FIXME
-        if (!isset($frame['function'])) {
-            return false;
-        }
-        if (!isset($frame['class']) && in_array($frame['function'], array(
-                        'lexc_raise',
-                        'lexc_asserthandler',
-                        'assert'
-                        ))) {
-            return true;
-        }
-        if (!isset($frame['class'])) {
-            return false;
-        }
-        if ($frame['class'] == 'AbstractErrorhandler' &&
-                in_array($frame['function'], array(
-                        'handle'
-                        ))) {
-            return true;
-        }
-        if ($frame['class'] == get_class($this)) {
-            return true;
         }
         return false;
     }
@@ -416,24 +399,21 @@ abstract class AbstractErrorHandler
      */
     public function renderBacktrace($bt = null)
     {
-        if ($bt === null) {
-            $bt = $this->normalizeBacktrace();
-        }
         $ret = '';
         $i = 0;
-        foreach ($bt as $level) {
+        foreach ($bt as $frame) {
             $ret .= "#" . ($i++) . " ";
-            if (isset($level['class'])) {
-                $ret .= $level['class'] . '::';
+            if (@$frame['class'] !== null) {
+                $ret .= $frame['class'] . '::';
             }
-            if (isset($level['function'])) {
-                $ret .= $level['function'];
+            if (@$frame['function'] !== null) {
+                $ret .= $frame['function'];
             }
             $ret .= '()';
-            if (isset($level['file'])) {
-                $ret .= ' at ' . $level['file'];
-                if (isset($level['line'])) {
-                    $ret .= ':' . $level['line'];
+            if (@$frame['file'] !== null) {
+                $ret .= ' at ' . $frame['file'];
+                if (@$frame['line'] !== null) {
+                    $ret .= ':' . $frame['line'];
                 }
             }
             $ret .= "\n";
