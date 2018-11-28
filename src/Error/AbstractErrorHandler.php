@@ -364,8 +364,8 @@ abstract class AbstractErrorHandler
                     'line'      => $line,
                 ];
             }
-            $file = $frame['file'];
-            $line = $frame['line'];
+            $file = @$frame['file'];
+            $line = @$frame['line'];
         }
         $trace[] = [
             'file' => $file,
