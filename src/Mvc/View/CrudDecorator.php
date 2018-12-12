@@ -22,7 +22,7 @@ namespace Mindbit\Mpl\Mvc\View;
 use Mindbit\Mpl\Mvc\Controller\SimpleFormRequest;
 
 /**
- * @property \Mindbit\Mpl\Mvc\Controller\OmRequest $request
+ * @property \Mindbit\Mpl\Mvc\Controller\SimpleFormRequest $request
  */
 class CrudDecorator extends HtmlDecorator
 {
