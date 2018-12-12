@@ -71,29 +71,41 @@ abstract class OmRequest extends BaseRequest
     protected function setOmFields($data)
     {
         foreach ($data as $field => $value) {
-            $setter = 'set' . $this->tableMap->translateFieldName(
+            $pos = $this->tableMap->translateFieldName(
                 $field,
                 TableMap::TYPE_FIELDNAME,
-                TableMap::TYPE_PHPNAME
+                TableMap::TYPE_NUM
             );
-            // The following block worksaround the following issue: when text
-            // fields are set to their default value during update, they are
-            // not actually saved into the database. Look at the doSave()
-            // method below for the full comment.
-            //
-            // All this mess is because BaseObject::$modifiedColumns is
-            // protected and therefore we cannot explicitly set the column
-            // as modified.
-            /* FIXME still needed for Propel2 ?
-            if ($this->operationType == self::OPERATION_UPDATE) {
-                $column = $tableMap->getColumn($field);
-                if ($column->isText()) {
-                    call_user_func(array($this->om, "set".$phpName), '_' . $data[$field]);
-                }
-            }
-            */
-            $this->om->$setter($data[$field]);
+            $this->om->setByPosition($pos, $value);
         }
+
+        if ($this->action != self::ACTION_UPDATE) {
+            return;
+        }
+
+        // On update, we want to do just a SQL UPDATE query and avoid an extra
+        // SELECT query to hydrate the object. This works if we set the primary
+        // key value on the OM object and call save(), but we need to do some
+        // extra work to ensure all columns are updated. By default, Propel
+        // excludes unmodified columns from the UPDATE query, but, because the
+        // object is not hydrated, it compares the column values that we set
+        // with the default column values (the constructor initializes all OM
+        // fields to the default value). Without the extra handling, the side
+        // effect is that columns can never be updated to the default value.
+
+        $class = new \ReflectionClass($this->om);
+        $property = $class->getProperty('modifiedColumns');
+        $property->setAccessible(true);
+        $modifiedColumns = $property->getValue($this->om);
+        foreach ($data as $field => $value) {
+            $col = $this->tableMap->translateFieldName(
+                $field,
+                TableMap::TYPE_FIELDNAME,
+                TableMap::TYPE_COLNAME
+            );
+            $modifiedColumns[$col] = true;
+        }
+        $property->setValue($this->om, $modifiedColumns);
     }
 
     protected function omToArray($om = null)
@@ -161,7 +173,7 @@ abstract class OmRequest extends BaseRequest
      *
      * @param bool $new
      */
-    protected function actionSave($new)
+    protected function doSave()
     {
         $this->setOmFields($this->arrayToOm());
         if (!$this->validate()) {
@@ -173,27 +185,7 @@ abstract class OmRequest extends BaseRequest
             return;
         }
         */
-        // Intentionally call setNew() *AFTER* setOmFields() was called, because
-        // otherwise updating a field to its default value would not work (the OM
-        // class constructor sets all fields to their default values and all
-        // setter methods check if we actually change the value)
-        //
-        // Actually, this only works for integer type fields, where the Propel
-        // generated setter code looks something like this:
-        //     if ($this->reinnoire !== $v || $this->isNew()) {
-        //         $this->reinnoire = $v;
-        //         $this->modifiedColumns[] = DgsCertificatPeer::REINNOIRE;
-        //     }
-        //
-        // On the other hand, for text fields the "new" state is not checked:
-        //     if ($this->cert_ai_org !== $v) {
-        //         $this->cert_ai_org = $v;
-        //         $this->modifiedColumns[] = DgsCertificatPeer::CERT_AI_ORG;
-        //     }
-        //
-        // The case is almost the same for DateTime fields, but that's more
-        // complex.
-        $this->om->setNew($new);
+        $this->om->setNew($this->action == self::ACTION_ADD);
         $this->omSave();
     }
 
@@ -210,12 +202,12 @@ abstract class OmRequest extends BaseRequest
 
     protected function actionAdd()
     {
-        $this->actionSave(true);
+        $this->doSave();
     }
 
     protected function actionUpdate()
     {
-        $this->actionSave(false);
+        $this->doSave();
     }
 
     protected function actionRemove()
