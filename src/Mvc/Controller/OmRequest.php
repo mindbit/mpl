@@ -29,16 +29,12 @@ abstract class OmRequest extends BaseRequest
     const ACTION_UPDATE = 'update';
     const ACTION_REMOVE = 'remove';
 
-    protected $data = array();
-
     protected $om;
 
     /**
      * @var \Propel\Runtime\Map\TableMap
      */
     protected $tableMap;
-
-    protected $omFieldNames;
 
     abstract protected function createOm();
     abstract protected function actionFetch();
@@ -54,7 +50,6 @@ abstract class OmRequest extends BaseRequest
     {
         $this->om = $this->createOm();
         $this->tableMap = $this->getTableMapInstance($this->om);
-        $this->omFieldNames = $this->tableMap->getFieldNames(TableMap::TYPE_FIELDNAME);
         $this->errors = array();
     }
 
@@ -68,93 +63,94 @@ abstract class OmRequest extends BaseRequest
         return key($this->tableMap->getPrimaryKeys());
     }
 
-    protected function setOmFields($data)
+    /**
+     * OM fromArray() wrapper
+     *
+     * On update, we want to do just a SQL UPDATE query and avoid an extra
+     * SELECT query to hydrate the object. This works if we set the primary
+     * key value on the OM object and call save(), but we need to do some
+     * extra work to ensure all columns are updated. By default, Propel
+     * excludes unmodified columns from the UPDATE query, but, because the
+     * object is not hydrated, it compares the column values that we set
+     * with the default column values (the constructor initializes all OM
+     * fields to the default value). Without the extra handling, the side
+     * effect is that columns can never be updated to the default value.
+     *
+     * @param array  $arr     An array to populate the object from
+     * @param string $keyType The type of keys the array uses
+     * @param string $prefix  Prefix to add to OM key before looking up in $arr
+     * @return void
+     */
+    protected function omFromArray($arr, $keyType = TableMap::TYPE_PHPNAME)
     {
-        foreach ($data as $field => $value) {
-            $pos = $this->tableMap->translateFieldName(
-                $field,
-                TableMap::TYPE_FIELDNAME,
-                TableMap::TYPE_NUM
-            );
-            $this->om->setByPosition($pos, $value);
-        }
+        $this->om->fromArray($arr, $keyType);
 
         if ($this->action != self::ACTION_UPDATE) {
             return;
         }
 
-        // On update, we want to do just a SQL UPDATE query and avoid an extra
-        // SELECT query to hydrate the object. This works if we set the primary
-        // key value on the OM object and call save(), but we need to do some
-        // extra work to ensure all columns are updated. By default, Propel
-        // excludes unmodified columns from the UPDATE query, but, because the
-        // object is not hydrated, it compares the column values that we set
-        // with the default column values (the constructor initializes all OM
-        // fields to the default value). Without the extra handling, the side
-        // effect is that columns can never be updated to the default value.
-
         $class = new \ReflectionClass($this->om);
         $property = $class->getProperty('modifiedColumns');
         $property->setAccessible(true);
+
         $modifiedColumns = $property->getValue($this->om);
-        foreach ($data as $field => $value) {
-            $col = $this->tableMap->translateFieldName(
-                $field,
-                TableMap::TYPE_FIELDNAME,
-                TableMap::TYPE_COLNAME
-            );
-            $modifiedColumns[$col] = true;
+        foreach ($this->tableMap->getFieldNames($keyType) as $field) {
+            if (array_key_exists($field, $arr)) {
+                $col = $this->tableMap->translateFieldName($field, $keyType, TableMap::TYPE_COLNAME);
+                $modifiedColumns[$col] = true;
+            }
         }
         $property->setValue($this->om, $modifiedColumns);
     }
 
-    protected function omToArray($om = null)
+    /**
+     * OM toArray() wrapper
+     *
+     * Blob columns are read by propel into a memory buffer and are returned to
+     * the user as a resource of type stream. This is not very useful and, since
+     * we don't expect very large values, we convert them back to PHP strings.
+     *
+     * @param string $keyType The type of keys the returned array uses
+     * @return array
+     */
+    protected function omToArray($keyType = TableMap::TYPE_PHPNAME)
     {
-        $ret = array();
-        $om = (array)($om ?: $this->om);
-        foreach ($this->omFieldNames as $field) {
-            $val = $om[Propel::PROTECTED_MAGIC . $field];
-            $column = $this->tableMap->getColumn($field);
-            /* Blob columns are read by propel into a memory buffer and
-               are returned to the user as a resource of type stream.
-               Since those cannot be json encoded, and we need that in
-               all our SmartClient applications, we need to read the
-               buffer contents into a string.
-               FIXME: does this still apply to Propel 2 ?
-             */
-            if (is_resource($val) && $column->isLob()) {
-                $val = stream_get_contents($val);
+        $ret = $this->om->toArray($keyType);
+        foreach ($ret as $key => $value) {
+            if (is_resource($value)) {
+                $name = $this->tableMap->translateFieldName($name, $keyType, TableMap::TYPE_COLNAME);
+                $column = $this->tableMap->getColumn($name);
+                if ($column->isLob()) {
+                    $ret[$key] = stream_get_contents($value);
+                }
             }
-            $ret[$field] = $val === null ? '' : $val;
         }
         return $ret;
     }
 
-    protected function arrayToOm($data = null)
+    /**
+     * Extract request data and prepare it for importing into OM
+     *
+     * The data that is returned by this function is used with omFromArray() to
+     * import it into the OM. It is OK to return more fields than the OM expects
+     * because omFromArray() only imports the fields that are relevant to the OM.
+     *
+     * The base implementation in this class just returns $_REQUEST. Subclasses
+     * can reimplement this method if they need to get the data from a different
+     * source and/or do additional processing before the data is imported into
+     * the OM. Examples:
+     *  - Request data is encapsulated in another format (JSON, XML, etc.);
+     *  - Request field names are prefixed and the prefix needs to be removed
+     *    before fields are passed to omFromArray();
+     *  - Multiple request fields need to be aggregated into a single OM field;
+     *  - Some request fields need to be processed before they are passed to
+     *    omFromArray(), e.g. trimmed.
+     *
+     * @return array
+     */
+    protected function getRequestData()
     {
-        if ($data === null) {
-            $data = $this->data;
-        }
-        $ret = array();
-        foreach ($this->arrayToOmFieldNames() as $field) {
-            if (!isset($data[$field])) {
-                continue;
-            }
-            $column = $this->tableMap->getColumn($field);
-            $value = $data[$field];
-            // For text and numeric columns that can be null we translate '' to null.
-            if ($data[$field] === '' && ($column->isText() || $column->isNumeric()) &&
-                    !$column->isNotNull()) {
-                $value = null;
-            }
-            $ret[$field] = $value;
-        }
-        return $ret;
-    }
-
-    protected function arrayToOmFieldNames()
-    {
-        return $this->omFieldNames;
+        return $_REQUEST;
     }
 
     protected function validate()
@@ -175,7 +171,7 @@ abstract class OmRequest extends BaseRequest
      */
     protected function doSave()
     {
-        $this->setOmFields($this->arrayToOm());
+        $this->omFromArray($this->getRequestData(), TableMap::TYPE_FIELDNAME);
         if (!$this->validate()) {
             return;
         }

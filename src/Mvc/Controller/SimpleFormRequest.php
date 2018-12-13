@@ -19,57 +19,14 @@
 
 namespace Mindbit\Mpl\Mvc\Controller;
 
+use Propel\Runtime\Map\TableMap;
+
 abstract class SimpleFormRequest extends OmRequest
 {
     const ACTION_NEW        = 'new';
 
     const STATUS_ADD        = self::ACTION_ADD;
     const STATUS_UPDATE     = self::ACTION_UPDATE;
-
-    /* FIXME
-    protected $prefixDataMapping = array();
-    */
-
-    /**
-     * Return an array that maps request field names to OM field names.
-     *
-     * Keys are the OM field names and values are the corresponding
-     * request field names.
-     */
-    protected function getRequestDataMapping()
-    {
-        return array();
-    }
-
-    /* FIXME
-    protected function prefixRequestDataMapping($prefix)
-    {
-        if (isset($this->prefixDataMapping[$prefix])) {
-            return $this->prefixDataMapping[$prefix];
-        }
-        $map = array();
-        foreach ($this->omFieldNames as $omField) {
-            $map[$omField] = $prefix . $omField;
-        }
-        $this->prefixDataMapping[$prefix] = $map;
-        return $map;
-    }
-    */
-
-    protected function getRequestData()
-    {
-        $data = array();
-        $map = $this->getRequestDataMapping();
-
-        foreach ($this->omFieldNames as $omField) {
-            $requestField = isset($map[$omField]) ?: $omField;
-            if (isset($_REQUEST[$requestField])) {
-                $data[$omField] = $_REQUEST[$requestField];
-            }
-        }
-
-        return $data;
-    }
 
     protected function actionFetch()
     {
@@ -94,16 +51,8 @@ abstract class SimpleFormRequest extends OmRequest
         return isset($_REQUEST[$this->getPrimaryKeyFieldName()]) ? self::ACTION_FETCH : self::ACTION_NEW;
     }
 
-    public function getPrimaryKeyFieldName()
-    {
-        $pk = parent::getPrimaryKeyFieldName();
-        $map = $this->getRequestDataMapping();
-        return @$map[$pk] ?: $pk;
-    }
-
     public function handle()
     {
-        $this->data = $this->getRequestData();
         parent::handle();
 
         switch ($this->action) {
@@ -121,16 +70,20 @@ abstract class SimpleFormRequest extends OmRequest
         }
     }
 
+    /**
+     * Extract field data from the OM into a format that is suitable for
+     * inclusion into template variables and/or form.
+     *
+     * The base implementation in this class is just a wrapper for the OM
+     * omToArray() method. Subclasses can reimplement this method to do
+     * additional processing on the data. Examples:
+     *  - Some OM fields need to be broken down into multiple form fields;
+     *  - Additonal data needs to be fetched from different objects.
+     *
+     * @return array
+     */
     public function getFormData()
     {
-        $formData = array();
-        $omData = $this->omToArray();
-        $map = $this->getRequestDataMapping();
-
-        foreach ($this->omFieldNames as $omField) {
-            $formData[isset($map[$omField]) ?: $omField] = $omData[$omField];
-        }
-
-        return $formData;
+        return $this->omToArray(TableMap::TYPE_FIELDNAME);
     }
 }

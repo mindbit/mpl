@@ -77,16 +77,8 @@ class CrudDecorator extends HtmlDecorator
             default:
                 return null;
         }
-        $this->template->setVariables($this->getRequestVariables());
-        parent::send();
-    }
 
-    /**
-     * Override if request variables don't map 1:1 to the form.
-     * @return array
-     */
-    protected function getRequestVariables()
-    {
-        return $this->request->getFormData();
+        $this->template->setVariables($this->request->getFormData());
+        parent::send();
     }
 }
