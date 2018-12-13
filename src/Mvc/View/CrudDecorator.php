@@ -72,13 +72,13 @@ class CrudDecorator extends HtmlDecorator
                     self::VAR_ID_NAME               => $this->request->getPrimaryKeyFieldName(),
                     self::VAR_ID_VALUE              => $this->request->getOm()->getPrimaryKey(),
                 ]);
-                $this->template->getBlock(self::BLOCK_ID)->show();
                 break;
             default:
                 return null;
         }
 
         $this->template->setVariables($this->request->getFormData());
+        $this->template->getBlock(self::BLOCK_ID)->show();
         parent::send();
     }
 }
